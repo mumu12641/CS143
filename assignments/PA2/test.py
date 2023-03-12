@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# test_compare.py
+# test.py
 import os
 myOutput = os.popen("make dotest").read()
 stdOutput = os.popen("lexer test.cl").read()

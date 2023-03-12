@@ -85,9 +85,19 @@ number          {digit}+(\.{digit}+)?(E[+-]?{digit}+)?
         BEGIN(commentFlag);
 }
 <COMMENT>[^(\*\)] {
-    
+
 }
 
+<COMMENT><<EOF>> {
+      BEGIN(commentFlag);
+      cool_yylval.error_msg = "EOF in comment";
+        return (ERROR);
+}
+
+"*)" {
+      cool_yylval.error_msg = "Unterminated string constant";
+        return (ERROR);
+}
 [ \t\f\r\v]  {}     
 [\n]        {curr_lineno++;}  
 {DARROW}		{ return (DARROW); }
@@ -188,10 +198,8 @@ self        {
   *  String constants (C syntax)
   *  Escape sequence \c is accepted for all characters c. Except for 
   *  \n \t \b \f, the result is c.
-  *
+  *   STR_CONST
   */
-
-
 
 
 

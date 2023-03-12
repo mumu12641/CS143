@@ -18,4 +18,6 @@ class CellularAutomaton inherits IO{
             self;
         }
     };
+    
+(* end let countdown
 }
