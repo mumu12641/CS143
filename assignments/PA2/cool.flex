@@ -235,6 +235,16 @@ self        {
         strcat(string_buf, &yytext[1]);
           
 }
+
+<STRING>. {
+        strcat(string_buf, &yytext[0]);
+}
+
+
+['\[\]\>] {
+        cool_yylval.error_msg = yytext;
+      return (ERROR);
+}
 . {
     return yytext[0];
 }
