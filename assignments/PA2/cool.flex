@@ -43,14 +43,17 @@ extern YYSTYPE cool_yylval;
  *  Add Your own definitions here
  */
 static int comment_flag;
-static int str_const_flag;
+static int string_length;
+
+
+
 %}
 
 /*
  * Define names for regular expressions here.
  */
 %x COMMENT
-%x STR_CONST_START
+%x STRING
 
 DARROW          =>
 digit           [0-9]
@@ -81,14 +84,14 @@ number          {digit}+(\.{digit}+)?(E[+-]?{digit}+)?
             curr_lineno++;
 }
 <COMMENT>"*)"    {
-        BEGIN(comment_flag);
+        BEGIN(INITIAL);
 }
 <COMMENT>[^(\*\)] {
 
 }
 
 <COMMENT><<EOF>> {
-      BEGIN(comment_flag);
+      BEGIN(INITIAL);
       cool_yylval.error_msg = "EOF in comment";
       return (ERROR);
 }
@@ -197,24 +200,41 @@ self        {
   *  String constants (C syntax)
   *  Escape sequence \c is accepted for all characters c. Except for 
   *  \n \t \b \f, the result is c.
-  *   char string_buf[MAX_STR_CONST]; /* to assemble string constants */
-  *   char *string_buf_ptr;
   */
 
 \" {
         string_buf[0] = '\0';
         string_buf_ptr = &string_buf[0];
-        BEGIN(STR_CONST_START);
+        string_length = 0;
+        BEGIN(STRING);
 }
 
-<STR_CONST_START> \"{
-        BEGIN(str_const_flag);
+<STRING>\" {
         cool_yylval.symbol = stringtable.add_string(string_buf);
         BEGIN(INITIAL);
         return (STR_CONST);
 }
 
+<STRING>\\n {
+        strcat(string_buf, "\n");
+}
 
+<STRING>\\t {
+        strcat(string_buf, "\t");
+}
+
+<STRING>\\b {
+        strcat(string_buf, "\b");
+}
+
+<STRING>\\f {
+        strcat(string_buf, "\f");
+}
+
+<STRING>\\. {
+        strcat(string_buf, &yytext[1]);
+          
+}
 . {
     return yytext[0];
 }

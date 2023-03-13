@@ -40,10 +40,13 @@
 #17 '.'
 #17 OBJECTID concat
 #17 '('
-\n"));
-            self;
-        }
-    };
-    
-(* end let countdown
-}
+a#17 STR_CONST "c"
+#17 ')'
+#17 ')'
+#17 ';'
+#18 OBJECTID self
+#18 ';'
+#19 '}'
+#20 '}'
+#20 ';'
+#23 ERROR "EOF in comment"
