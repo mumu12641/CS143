@@ -42,16 +42,15 @@ extern YYSTYPE cool_yylval;
 /*
  *  Add Your own definitions here
  */
- static int commentFlag;
-  
-  
+static int comment_flag;
+static int str_const_flag;
 %}
 
 /*
  * Define names for regular expressions here.
  */
 %x COMMENT
-
+%x STR_CONST_START
 
 DARROW          =>
 digit           [0-9]
@@ -75,28 +74,28 @@ number          {digit}+(\.{digit}+)?(E[+-]?{digit}+)?
 
 --.*$ {}
 "(*"        {
-            commentFlag = INITIAL;
+            comment_flag = INITIAL;
             BEGIN(COMMENT);
 }
 <COMMENT>"\n"    {
             curr_lineno++;
 }
 <COMMENT>"*)"    {
-        BEGIN(commentFlag);
+        BEGIN(comment_flag);
 }
 <COMMENT>[^(\*\)] {
 
 }
 
 <COMMENT><<EOF>> {
-      BEGIN(commentFlag);
+      BEGIN(comment_flag);
       cool_yylval.error_msg = "EOF in comment";
-        return (ERROR);
+      return (ERROR);
 }
 
 "*)" {
       cool_yylval.error_msg = "Unterminated string constant";
-        return (ERROR);
+      return (ERROR);
 }
 [ \t\f\r\v]  {}     
 [\n]        {curr_lineno++;}  
@@ -198,9 +197,22 @@ self        {
   *  String constants (C syntax)
   *  Escape sequence \c is accepted for all characters c. Except for 
   *  \n \t \b \f, the result is c.
-  *   STR_CONST
+  *   char string_buf[MAX_STR_CONST]; /* to assemble string constants */
+  *   char *string_buf_ptr;
   */
 
+\" {
+        string_buf[0] = '\0';
+        string_buf_ptr = &string_buf[0];
+        BEGIN(STR_CONST_START);
+}
+
+<STR_CONST_START> \"{
+        BEGIN(str_const_flag);
+        cool_yylval.symbol = stringtable.add_string(string_buf);
+        BEGIN(INITIAL);
+        return (STR_CONST);
+}
 
 
 . {
