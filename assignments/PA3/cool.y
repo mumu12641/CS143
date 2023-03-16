@@ -152,23 +152,24 @@
 
     /* You will want to change the following line. */
     %type <features> dummy_feature_list
-    %type <feature> feature_
+    %type <feature> feature
     %type <formals> formal_list
-    %type <formal> formal_
+    %type <formal> formal
     %type <cases> case_list
-    %type <case_> case_
+    %type <case_> case
     %type <exporessions> exporession_list
-    %type <expression> expression_
+    %type <exporessions> exporession_list_
+    %type <expression> expression
 
     /* Precedence declarations go here. */
     
     
-    %right '<-'
-    %left 'not'
+    %right ASSIGN
+    %left NOT
     %nonassoc '<=''<''='
     %left '+''-'
     %left '*''/'
-    %left 'isvoid'
+    %left ISVOID
     %left '~'
     %left '@'
     %left '.'
@@ -200,8 +201,80 @@
     /* Feature list may be empty, but no empty features in list. */
     dummy_feature_list:		/* empty */
     {  $$ = nil_Features(); }
+    | feature_list feature
+    {
+      $$ = append_Features($1,single_Features($2));
+      parse_results = $$;
+    }
+    ;
+
+    feature
+      : OBJECTID '(' ')' ':' TYPEID '{' expr '}' ';'
+      {$$ = method($1, nil_Formals(), $5, $7);}
+    | OBJECTID '(' formal_list ')' ':' TYPEID '{' expr '}' ';'
+      {$$ = method($1, $3, $6, $8);}
+    | OBJECTID  ':' TYPEID
+      {$$ = attr($1, $3, no_expr());}
+    | OBJECTID  ':' TYPEID ASSIGN expr ';'
+      {$$ = attr($1, $3, $5);}
+    ;
+     
+    formal_list :
+    { $$ = nil_Formals(); }
+    | formal_list , formal
+    { $$ =  append_Formals($1, single_Formals($2));}
+    ;
+
+    formal
+      : OBJECTID ':' TYPEID
+    { $$ = formal($1, $3);}
+    ;
+
+    exporession_list
+      : expr
+      {$$ = single_Expressions($1);}
+    | exporession_list ',' expr
+      {$$ = append_Expressions($1, single_Expressions($3));};
+
+    exporession_list_
+      : expr ';'
+      {$$ = single_Expressions($1);}
+    | exporession_list_ expr ';' 
+      {$$ = append_Expressions($1, single_Expressions($2));}
+    | exporession_list error ';'
+      {$$ = $1;};
+
+    expression 
+    : OBJECTID ASSIGN expression
+    { $$ = assign($1, $3);}
+    | expression '.' OBJECTID '(' ')'
+    { $$ = dispatch($1, $3, nil_Expressions());}
+    || expression  '.' OBJECTID '('  exporession_list  ')'
+    { $$ = dispatch($1,$3, $5); }
+    | expression  '@' TYPEID  '.' OBJECTID '('  ')'
+    { $$ = static_dispatch($1, $3, $5, nil_Expressions()); }
+    | expression  '@' TYPEID  '.' OBJECTID '('  exporession_list  ')'
+    { $$ = static_dispatch($1, $3, $5, $7);}
+
+    | OBJECTID '(' ')'
+    { $$ = dispatch(object(idtable.add_string('self')), $1, nil_Expressions);}
+    | OBJECTID '(' exporession_list ')'
+    { $$ = dispatch(object(idtable.add_string('self')), $1, $3);}
+
+    | IF expression THEN expression ELSE expression FI
+    { $$ = cond($2, $4, $6);}
+    | WHILE expr LOOP expr POOL
+    {$$ = loop($2, $4);}
+    | '{' expr_list_ '}'
+    {$$ = block($2);}
     
-    
+Expression let(Symbol identifier, Symbol type_decl, Expression init, Expression body)
+
+    | LET OBJECTID ':' TYPEID IN expression
+    { $$ = let($2, $4, no_expr(),$6);}
+    | LET OBJECTID ':' TYPEID ASSIGN expression IN expression
+    { $$ = let($2, $4, $6, &8);}
+    | LET OBJECTID ':' TYPEID IN expression
     /* end of grammar */
     %%
     
