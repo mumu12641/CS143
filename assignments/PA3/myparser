@@ -1,2 +1,2 @@
-#!/bin/csh -f
-./lexer $* | ./parser $*
+#!/bin/bash -f
+../PA2/lexer $* | ./parser $*

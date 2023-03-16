@@ -129,17 +129,50 @@
     value of each non terminal. (See section 3.6 in the bison 
     documentation for details). */
     
-    /* Declare types for the grammar's non-terminals. */
+    /* Declare types for the grammar's non-terminals. 
+      Boolean boolean;
+      Symbol symbol;
+      Program program;
+      Class_ class_;
+      Classes classes;
+      Feature feature;
+      Features features;
+      Formal formal;
+      Formals formals;
+      Case case_;
+      Cases cases;
+      Expression expression;
+      Expressions expressions;
+      char *error_msg;
+    */
     %type <program> program
     %type <classes> class_list
     %type <class_> class
     
+
     /* You will want to change the following line. */
     %type <features> dummy_feature_list
-    
+    %type <feature> feature_
+    %type <formals> formal_list
+    %type <formal> formal_
+    %type <cases> case_list
+    %type <case_> case_
+    %type <exporessions> exporession_list
+    %type <expression> expression_
+
     /* Precedence declarations go here. */
     
     
+    %right '<-'
+    %left 'not'
+    %nonassoc '<=''<''='
+    %left '+''-'
+    %left '*''/'
+    %left 'isvoid'
+    %left '~'
+    %left '@'
+    %left '.'
+
     %%
     /* 
     Save the root of the abstract syntax tree in a global variable.
