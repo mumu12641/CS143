@@ -90,6 +90,10 @@ number          {digit}+(\.{digit}+)?(E[+-]?{digit}+)?
 
 }
 
+<COMMENT>\* {
+        
+}
+
 <COMMENT><<EOF>> {
       BEGIN(INITIAL);
       cool_yylval.error_msg = "EOF in comment";
@@ -139,6 +143,7 @@ number          {digit}+(\.{digit}+)?(E[+-]?{digit}+)?
   */
 
 class       { return (CLASS); }
+Class       { return (CLASS); }
 else        { return (ELSE); }
 if          { return (IF); }
 fi          { return (FI); }
