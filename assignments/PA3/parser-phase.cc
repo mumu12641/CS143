@@ -12,8 +12,8 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <stdio.h>     // for Linux system
-#include <unistd.h>    // for getopt
+#include <stdio.h>    // for Linux system
+#include <unistd.h>   // for getopt
 #include "cool-io.h"  //includes iostream
 #include "cool-tree.h"
 #include "utilities.h"  // for fatal_error
@@ -22,13 +22,13 @@
 //
 // These globals keep everything working.
 //
-FILE *token_file = stdin;		// we read from this file
-extern Classes parse_results;	 // list of classes; used for multiple files 
-extern Program ast_root;	 // the AST produced by the parse
+FILE *token_file = stdin;      // we read from this file
+extern Classes parse_results;  // list of classes; used for multiple files
+extern Program ast_root;       // the AST produced by the parse
 
 char *curr_filename = "<stdin>";
 
-extern int omerrs;             // a count of lex and parse errors
+extern int omerrs;  // a count of lex and parse errors
 
 extern int cool_yyparse();
 void handle_flags(int argc, char *argv[]);
@@ -37,10 +37,9 @@ int main(int argc, char *argv[]) {
     handle_flags(argc, argv);
     cool_yyparse();
     if (omerrs != 0) {
-	cerr << "Compilation halted due to lex and parse errors\n";
-	exit(1);
+        cerr << "Compilation halted due to lex and parse errors\n";
+        exit(1);
     }
-    ast_root->dump_with_types(cout,0);
+    ast_root->dump_with_types(cout, 0);
     return 0;
 }
-

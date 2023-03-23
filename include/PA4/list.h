@@ -5,13 +5,12 @@
 //
 #include "copyright.h"
 
-
 //////////////////////////////////////////////////////////////////////
-//  
+//
 //  list.h
 //
 //  This file implements a list template.
-//  Adapted from similar templates written by Kathy Yelick and 
+//  Adapted from similar templates written by Kathy Yelick and
 //  Paul Hilfinger.
 //
 //////////////////////////////////////////////////////////////////////
@@ -24,21 +23,22 @@
 
 template <class T>
 class List {
-private:
-  T *head;
-  List<T>* tail;
-public:
-  List(T *h,List<T>* t = NULL): head(h), tail(t) { }
+   private:
+    T *head;
+    List<T> *tail;
 
-  T *hd() const       { return head; }  
-  List<T>* tl() const { return tail; }
+   public:
+    List(T *h, List<T> *t = NULL) : head(h), tail(t) {}
+
+    T *hd() const { return head; }
+    List<T> *tl() const { return tail; }
 };
 
 /////////////////////////////////////////////////////////////////////////
-// 
+//
 // list function templates
 //
-// To avoid potential problems with mutliple definitions of 
+// To avoid potential problems with mutliple definitions of
 // the List<> class members, the list functions are not members of the
 // list class.
 //
@@ -48,10 +48,8 @@ public:
 // Map a function for its side effect over a list.
 //
 template <class T>
-void list_map(void f(T*), List<T> *l)
-{
-  for (l; l != NULL; l = l->tl())
-    f(l->hd());
+void list_map(void f(T *), List<T> *l) {
+    for (l; l != NULL; l = l->tl()) f(l->hd());
 }
 
 //
@@ -59,25 +57,20 @@ void list_map(void f(T*), List<T> *l)
 // Requires that "<<" be defined for the element type.
 //
 template <class S, class T>
-void list_print(S &str, List<T> *l)
-{
-   str << "[\n";
-   for(; l != NULL; l = l->tl())
-	str << *(l->hd()) << " ";
-   str << "]\n";
+void list_print(S &str, List<T> *l) {
+    str << "[\n";
+    for (; l != NULL; l = l->tl()) str << *(l->hd()) << " ";
+    str << "]\n";
 }
 
 //
 // Compute the length of a list.
 //
 template <class T>
-int list_length(List<T> *l)
-{
-  int i = 0;
-  for (; l != NULL; l = l->tl())
-    i++;
-  return i;
+int list_length(List<T> *l) {
+    int i = 0;
+    for (; l != NULL; l = l->tl()) i++;
+    return i;
 }
 
 #endif
-

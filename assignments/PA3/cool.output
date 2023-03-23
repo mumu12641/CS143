@@ -1,13 +1,13 @@
-Terminals unused in grammar
+终端机在文法中未使用
 
     ERROR
 
 
-State 138 conflicts: 9 shift/reduce
-State 150 conflicts: 9 shift/reduce
+状态 138冲突：9 项偏移/归约
+状态 150冲突：9 项偏移/归约
 
 
-Grammar
+语法
 
     0 $accept: program $end
 
@@ -82,7 +82,7 @@ Grammar
    57 case: OBJECTID ':' TYPEID DARROW expr ';'
 
 
-Terminals, with rules where they appear
+终结语词，附有它们出现处的规则
 
     $end (0) 0
     '(' (40) 10 11 23 24 25 26 27 28 45
@@ -130,7 +130,7 @@ Terminals, with rules where they appear
     ERROR (283)
 
 
-Nonterminals, with rules where they appear
+非终结语词，附有它们出现处的规则
 
     $accept (45)
         on left: 0
@@ -175,592 +175,592 @@ Nonterminals, with rules where they appear
         on right: 56
 
 
-State 0
+状态 0
 
     0 $accept: • program $end
 
-    CLASS  shift, and go to state 1
+    CLASS  偏移，并进入状态 1
 
-    program     go to state 2
-    class_list  go to state 3
-    class       go to state 4
+    program     转到状态 2
+    class_list  转到状态 3
+    class       转到状态 4
 
 
-State 1
+状态 1
 
     4 class: CLASS • TYPEID '{' feature_list '}' ';'
     5      | CLASS • TYPEID INHERITS TYPEID '{' feature_list '}' ';'
     6      | CLASS • error ';' class
 
-    error   shift, and go to state 5
-    TYPEID  shift, and go to state 6
+    error   偏移，并进入状态 5
+    TYPEID  偏移，并进入状态 6
 
 
-State 2
+状态 2
 
     0 $accept: program • $end
 
-    $end  shift, and go to state 7
+    $end  偏移，并进入状态 7
 
 
-State 3
+状态 3
 
     1 program: class_list •
     3 class_list: class_list • class
 
-    CLASS  shift, and go to state 1
+    CLASS  偏移，并进入状态 1
 
-    $default  reduce using rule 1 (program)
+    $default  使用规则 1 以归约 (program)
 
-    class  go to state 8
+    class  转到状态 8
 
 
-State 4
+状态 4
 
     2 class_list: class •
 
-    $default  reduce using rule 2 (class_list)
+    $default  使用规则 2 以归约 (class_list)
 
 
-State 5
+状态 5
 
     6 class: CLASS error • ';' class
 
-    ';'  shift, and go to state 9
+    ';'  偏移，并进入状态 9
 
 
-State 6
+状态 6
 
     4 class: CLASS TYPEID • '{' feature_list '}' ';'
     5      | CLASS TYPEID • INHERITS TYPEID '{' feature_list '}' ';'
 
-    INHERITS  shift, and go to state 10
-    '{'       shift, and go to state 11
+    INHERITS  偏移，并进入状态 10
+    '{'       偏移，并进入状态 11
 
 
-State 7
+状态 7
 
     0 $accept: program $end •
 
-    $default  accept
+    $default  接受
 
 
-State 8
+状态 8
 
     3 class_list: class_list class •
 
-    $default  reduce using rule 3 (class_list)
+    $default  使用规则 3 以归约 (class_list)
 
 
-State 9
+状态 9
 
     6 class: CLASS error ';' • class
 
-    CLASS  shift, and go to state 1
+    CLASS  偏移，并进入状态 1
 
-    class  go to state 12
+    class  转到状态 12
 
 
-State 10
+状态 10
 
     5 class: CLASS TYPEID INHERITS • TYPEID '{' feature_list '}' ';'
 
-    TYPEID  shift, and go to state 13
+    TYPEID  偏移，并进入状态 13
 
 
-State 11
+状态 11
 
     4 class: CLASS TYPEID '{' • feature_list '}' ';'
 
-    $default  reduce using rule 7 (feature_list)
+    $default  使用规则 7 以归约 (feature_list)
 
-    feature_list  go to state 14
+    feature_list  转到状态 14
 
 
-State 12
+状态 12
 
     6 class: CLASS error ';' class •
 
-    $default  reduce using rule 6 (class)
+    $default  使用规则 6 以归约 (class)
 
 
-State 13
+状态 13
 
     5 class: CLASS TYPEID INHERITS TYPEID • '{' feature_list '}' ';'
 
-    '{'  shift, and go to state 15
+    '{'  偏移，并进入状态 15
 
 
-State 14
+状态 14
 
     4 class: CLASS TYPEID '{' feature_list • '}' ';'
     8 feature_list: feature_list • feature
     9             | feature_list • error ';'
 
-    error     shift, and go to state 16
-    OBJECTID  shift, and go to state 17
-    '}'       shift, and go to state 18
+    error     偏移，并进入状态 16
+    OBJECTID  偏移，并进入状态 17
+    '}'       偏移，并进入状态 18
 
-    feature  go to state 19
+    feature  转到状态 19
 
 
-State 15
+状态 15
 
     5 class: CLASS TYPEID INHERITS TYPEID '{' • feature_list '}' ';'
 
-    $default  reduce using rule 7 (feature_list)
+    $default  使用规则 7 以归约 (feature_list)
 
-    feature_list  go to state 20
+    feature_list  转到状态 20
 
 
-State 16
+状态 16
 
     9 feature_list: feature_list error • ';'
 
-    ';'  shift, and go to state 21
+    ';'  偏移，并进入状态 21
 
 
-State 17
+状态 17
 
    10 feature: OBJECTID • '(' formal_list ')' ':' TYPEID '{' expr '}' ';'
    11        | OBJECTID • '(' ')' ':' TYPEID '{' expr '}' ';'
    12        | OBJECTID • ':' TYPEID ASSIGN expr ';'
    13        | OBJECTID • ':' TYPEID ';'
 
-    '('  shift, and go to state 22
-    ':'  shift, and go to state 23
+    '('  偏移，并进入状态 22
+    ':'  偏移，并进入状态 23
 
 
-State 18
+状态 18
 
     4 class: CLASS TYPEID '{' feature_list '}' • ';'
 
-    ';'  shift, and go to state 24
+    ';'  偏移，并进入状态 24
 
 
-State 19
+状态 19
 
     8 feature_list: feature_list feature •
 
-    $default  reduce using rule 8 (feature_list)
+    $default  使用规则 8 以归约 (feature_list)
 
 
-State 20
+状态 20
 
     5 class: CLASS TYPEID INHERITS TYPEID '{' feature_list • '}' ';'
     8 feature_list: feature_list • feature
     9             | feature_list • error ';'
 
-    error     shift, and go to state 16
-    OBJECTID  shift, and go to state 17
-    '}'       shift, and go to state 25
+    error     偏移，并进入状态 16
+    OBJECTID  偏移，并进入状态 17
+    '}'       偏移，并进入状态 25
 
-    feature  go to state 19
+    feature  转到状态 19
 
 
-State 21
+状态 21
 
     9 feature_list: feature_list error ';' •
 
-    $default  reduce using rule 9 (feature_list)
+    $default  使用规则 9 以归约 (feature_list)
 
 
-State 22
+状态 22
 
    10 feature: OBJECTID '(' • formal_list ')' ':' TYPEID '{' expr '}' ';'
    11        | OBJECTID '(' • ')' ':' TYPEID '{' expr '}' ';'
 
-    OBJECTID  shift, and go to state 26
-    ')'       shift, and go to state 27
+    OBJECTID  偏移，并进入状态 26
+    ')'       偏移，并进入状态 27
 
-    formal_list  go to state 28
-    formal       go to state 29
+    formal_list  转到状态 28
+    formal       转到状态 29
 
 
-State 23
+状态 23
 
    12 feature: OBJECTID ':' • TYPEID ASSIGN expr ';'
    13        | OBJECTID ':' • TYPEID ';'
 
-    TYPEID  shift, and go to state 30
+    TYPEID  偏移，并进入状态 30
 
 
-State 24
+状态 24
 
     4 class: CLASS TYPEID '{' feature_list '}' ';' •
 
-    $default  reduce using rule 4 (class)
+    $default  使用规则 4 以归约 (class)
 
 
-State 25
+状态 25
 
     5 class: CLASS TYPEID INHERITS TYPEID '{' feature_list '}' • ';'
 
-    ';'  shift, and go to state 31
+    ';'  偏移，并进入状态 31
 
 
-State 26
+状态 26
 
    16 formal: OBJECTID • ':' TYPEID
 
-    ':'  shift, and go to state 32
+    ':'  偏移，并进入状态 32
 
 
-State 27
+状态 27
 
    11 feature: OBJECTID '(' ')' • ':' TYPEID '{' expr '}' ';'
 
-    ':'  shift, and go to state 33
+    ':'  偏移，并进入状态 33
 
 
-State 28
+状态 28
 
    10 feature: OBJECTID '(' formal_list • ')' ':' TYPEID '{' expr '}' ';'
    15 formal_list: formal_list • ',' formal
 
-    ')'  shift, and go to state 34
-    ','  shift, and go to state 35
+    ')'  偏移，并进入状态 34
+    ','  偏移，并进入状态 35
 
 
-State 29
+状态 29
 
    14 formal_list: formal •
 
-    $default  reduce using rule 14 (formal_list)
+    $default  使用规则 14 以归约 (formal_list)
 
 
-State 30
+状态 30
 
    12 feature: OBJECTID ':' TYPEID • ASSIGN expr ';'
    13        | OBJECTID ':' TYPEID • ';'
 
-    ASSIGN  shift, and go to state 36
-    ';'     shift, and go to state 37
+    ASSIGN  偏移，并进入状态 36
+    ';'     偏移，并进入状态 37
 
 
-State 31
+状态 31
 
     5 class: CLASS TYPEID INHERITS TYPEID '{' feature_list '}' ';' •
 
-    $default  reduce using rule 5 (class)
+    $default  使用规则 5 以归约 (class)
 
 
-State 32
+状态 32
 
    16 formal: OBJECTID ':' • TYPEID
 
-    TYPEID  shift, and go to state 38
+    TYPEID  偏移，并进入状态 38
 
 
-State 33
+状态 33
 
    11 feature: OBJECTID '(' ')' ':' • TYPEID '{' expr '}' ';'
 
-    TYPEID  shift, and go to state 39
+    TYPEID  偏移，并进入状态 39
 
 
-State 34
+状态 34
 
    10 feature: OBJECTID '(' formal_list ')' • ':' TYPEID '{' expr '}' ';'
 
-    ':'  shift, and go to state 40
+    ':'  偏移，并进入状态 40
 
 
-State 35
+状态 35
 
    15 formal_list: formal_list ',' • formal
 
-    OBJECTID  shift, and go to state 26
+    OBJECTID  偏移，并进入状态 26
 
-    formal  go to state 41
+    formal  转到状态 41
 
 
-State 36
+状态 36
 
    12 feature: OBJECTID ':' TYPEID ASSIGN • expr ';'
 
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '('         shift, and go to state 55
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
 
-    expr  go to state 56
+    expr  转到状态 56
 
 
-State 37
+状态 37
 
    13 feature: OBJECTID ':' TYPEID ';' •
 
-    $default  reduce using rule 13 (feature)
+    $default  使用规则 13 以归约 (feature)
 
 
-State 38
+状态 38
 
    16 formal: OBJECTID ':' TYPEID •
 
-    $default  reduce using rule 16 (formal)
+    $default  使用规则 16 以归约 (formal)
 
 
-State 39
+状态 39
 
    11 feature: OBJECTID '(' ')' ':' TYPEID • '{' expr '}' ';'
 
-    '{'  shift, and go to state 57
+    '{'  偏移，并进入状态 57
 
 
-State 40
+状态 40
 
    10 feature: OBJECTID '(' formal_list ')' ':' • TYPEID '{' expr '}' ';'
 
-    TYPEID  shift, and go to state 58
+    TYPEID  偏移，并进入状态 58
 
 
-State 41
+状态 41
 
    15 formal_list: formal_list ',' formal •
 
-    $default  reduce using rule 15 (formal_list)
+    $default  使用规则 15 以归约 (formal_list)
 
 
-State 42
+状态 42
 
    29 expr: IF • expr THEN expr ELSE expr FI
 
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '('         shift, and go to state 55
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
 
-    expr  go to state 59
+    expr  转到状态 59
 
 
-State 43
+状态 43
 
    32 expr: LET • expr_let
 
-    error     shift, and go to state 60
-    OBJECTID  shift, and go to state 61
+    error     偏移，并进入状态 60
+    OBJECTID  偏移，并进入状态 61
 
-    expr_let  go to state 62
+    expr_let  转到状态 62
 
 
-State 44
+状态 44
 
    30 expr: WHILE • expr LOOP expr POOL
 
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '('         shift, and go to state 55
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
 
-    expr  go to state 63
+    expr  转到状态 63
 
 
-State 45
+状态 45
 
    33 expr: CASE • expr OF case_list ESAC
 
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '('         shift, and go to state 55
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
 
-    expr  go to state 64
+    expr  转到状态 64
 
 
-State 46
+状态 46
 
    34 expr: NEW • TYPEID
 
-    TYPEID  shift, and go to state 65
+    TYPEID  偏移，并进入状态 65
 
 
-State 47
+状态 47
 
    35 expr: ISVOID • expr
 
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '('         shift, and go to state 55
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
 
-    expr  go to state 66
+    expr  转到状态 66
 
 
-State 48
+状态 48
 
    48 expr: STR_CONST •
 
-    $default  reduce using rule 48 (expr)
+    $default  使用规则 48 以归约 (expr)
 
 
-State 49
+状态 49
 
    47 expr: INT_CONST •
 
-    $default  reduce using rule 47 (expr)
+    $default  使用规则 47 以归约 (expr)
 
 
-State 50
+状态 50
 
    49 expr: BOOL_CONST •
 
-    $default  reduce using rule 49 (expr)
+    $default  使用规则 49 以归约 (expr)
 
 
-State 51
+状态 51
 
    22 expr: OBJECTID • ASSIGN expr
    25     | OBJECTID • '(' expr_list_dispatch ')'
    26     | OBJECTID • '(' ')'
    46     | OBJECTID •
 
-    ASSIGN  shift, and go to state 67
-    '('     shift, and go to state 68
+    ASSIGN  偏移，并进入状态 67
+    '('     偏移，并进入状态 68
 
-    $default  reduce using rule 46 (expr)
+    $default  使用规则 46 以归约 (expr)
 
 
-State 52
+状态 52
 
    44 expr: NOT • expr
 
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '('         shift, and go to state 55
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
 
-    expr  go to state 69
+    expr  转到状态 69
 
 
-State 53
+状态 53
 
    40 expr: '~' • expr
 
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '('         shift, and go to state 55
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
 
-    expr  go to state 70
+    expr  转到状态 70
 
 
-State 54
+状态 54
 
    31 expr: '{' • expr_list_block '}'
 
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '('         shift, and go to state 55
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
 
-    expr_list_block  go to state 71
-    expr             go to state 72
+    expr_list_block  转到状态 71
+    expr             转到状态 72
 
 
-State 55
+状态 55
 
    45 expr: '(' • expr ')'
 
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '('         shift, and go to state 55
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
 
-    expr  go to state 73
+    expr  转到状态 73
 
 
-State 56
+状态 56
 
    12 feature: OBJECTID ':' TYPEID ASSIGN expr • ';'
    23 expr: expr • '.' OBJECTID '(' expr_list_dispatch ')'
@@ -775,48 +775,48 @@ State 56
    42     | expr • LE expr
    43     | expr • '=' expr
 
-    LE   shift, and go to state 74
-    '<'  shift, and go to state 75
-    '='  shift, and go to state 76
-    '+'  shift, and go to state 77
-    '-'  shift, and go to state 78
-    '*'  shift, and go to state 79
-    '/'  shift, and go to state 80
-    '@'  shift, and go to state 81
-    '.'  shift, and go to state 82
-    ';'  shift, and go to state 83
+    LE   偏移，并进入状态 74
+    '<'  偏移，并进入状态 75
+    '='  偏移，并进入状态 76
+    '+'  偏移，并进入状态 77
+    '-'  偏移，并进入状态 78
+    '*'  偏移，并进入状态 79
+    '/'  偏移，并进入状态 80
+    '@'  偏移，并进入状态 81
+    '.'  偏移，并进入状态 82
+    ';'  偏移，并进入状态 83
 
 
-State 57
+状态 57
 
    11 feature: OBJECTID '(' ')' ':' TYPEID '{' • expr '}' ';'
 
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '('         shift, and go to state 55
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
 
-    expr  go to state 84
+    expr  转到状态 84
 
 
-State 58
+状态 58
 
    10 feature: OBJECTID '(' formal_list ')' ':' TYPEID • '{' expr '}' ';'
 
-    '{'  shift, and go to state 85
+    '{'  偏移，并进入状态 85
 
 
-State 59
+状态 59
 
    23 expr: expr • '.' OBJECTID '(' expr_list_dispatch ')'
    24     | expr • '.' OBJECTID '(' ')'
@@ -831,43 +831,43 @@ State 59
    42     | expr • LE expr
    43     | expr • '=' expr
 
-    THEN  shift, and go to state 86
-    LE    shift, and go to state 74
-    '<'   shift, and go to state 75
-    '='   shift, and go to state 76
-    '+'   shift, and go to state 77
-    '-'   shift, and go to state 78
-    '*'   shift, and go to state 79
-    '/'   shift, and go to state 80
-    '@'   shift, and go to state 81
-    '.'   shift, and go to state 82
+    THEN  偏移，并进入状态 86
+    LE    偏移，并进入状态 74
+    '<'   偏移，并进入状态 75
+    '='   偏移，并进入状态 76
+    '+'   偏移，并进入状态 77
+    '-'   偏移，并进入状态 78
+    '*'   偏移，并进入状态 79
+    '/'   偏移，并进入状态 80
+    '@'   偏移，并进入状态 81
+    '.'   偏移，并进入状态 82
 
 
-State 60
+状态 60
 
    54 expr_let: error • ',' expr_let
 
-    ','  shift, and go to state 87
+    ','  偏移，并进入状态 87
 
 
-State 61
+状态 61
 
    50 expr_let: OBJECTID • ':' TYPEID IN expr
    51         | OBJECTID • ':' TYPEID ASSIGN expr IN expr
    52         | OBJECTID • ':' TYPEID ',' expr_let
    53         | OBJECTID • ':' TYPEID ASSIGN expr ',' expr_let
 
-    ':'  shift, and go to state 88
+    ':'  偏移，并进入状态 88
 
 
-State 62
+状态 62
 
    32 expr: LET expr_let •
 
-    $default  reduce using rule 32 (expr)
+    $default  使用规则 32 以归约 (expr)
 
 
-State 63
+状态 63
 
    23 expr: expr • '.' OBJECTID '(' expr_list_dispatch ')'
    24     | expr • '.' OBJECTID '(' ')'
@@ -882,19 +882,19 @@ State 63
    42     | expr • LE expr
    43     | expr • '=' expr
 
-    LOOP  shift, and go to state 89
-    LE    shift, and go to state 74
-    '<'   shift, and go to state 75
-    '='   shift, and go to state 76
-    '+'   shift, and go to state 77
-    '-'   shift, and go to state 78
-    '*'   shift, and go to state 79
-    '/'   shift, and go to state 80
-    '@'   shift, and go to state 81
-    '.'   shift, and go to state 82
+    LOOP  偏移，并进入状态 89
+    LE    偏移，并进入状态 74
+    '<'   偏移，并进入状态 75
+    '='   偏移，并进入状态 76
+    '+'   偏移，并进入状态 77
+    '-'   偏移，并进入状态 78
+    '*'   偏移，并进入状态 79
+    '/'   偏移，并进入状态 80
+    '@'   偏移，并进入状态 81
+    '.'   偏移，并进入状态 82
 
 
-State 64
+状态 64
 
    23 expr: expr • '.' OBJECTID '(' expr_list_dispatch ')'
    24     | expr • '.' OBJECTID '(' ')'
@@ -909,26 +909,26 @@ State 64
    42     | expr • LE expr
    43     | expr • '=' expr
 
-    OF   shift, and go to state 90
-    LE   shift, and go to state 74
-    '<'  shift, and go to state 75
-    '='  shift, and go to state 76
-    '+'  shift, and go to state 77
-    '-'  shift, and go to state 78
-    '*'  shift, and go to state 79
-    '/'  shift, and go to state 80
-    '@'  shift, and go to state 81
-    '.'  shift, and go to state 82
+    OF   偏移，并进入状态 90
+    LE   偏移，并进入状态 74
+    '<'  偏移，并进入状态 75
+    '='  偏移，并进入状态 76
+    '+'  偏移，并进入状态 77
+    '-'  偏移，并进入状态 78
+    '*'  偏移，并进入状态 79
+    '/'  偏移，并进入状态 80
+    '@'  偏移，并进入状态 81
+    '.'  偏移，并进入状态 82
 
 
-State 65
+状态 65
 
    34 expr: NEW TYPEID •
 
-    $default  reduce using rule 34 (expr)
+    $default  使用规则 34 以归约 (expr)
 
 
-State 66
+状态 66
 
    23 expr: expr • '.' OBJECTID '(' expr_list_dispatch ')'
    24     | expr • '.' OBJECTID '(' ')'
@@ -943,60 +943,60 @@ State 66
    42     | expr • LE expr
    43     | expr • '=' expr
 
-    '@'  shift, and go to state 81
-    '.'  shift, and go to state 82
+    '@'  偏移，并进入状态 81
+    '.'  偏移，并进入状态 82
 
-    $default  reduce using rule 35 (expr)
+    $default  使用规则 35 以归约 (expr)
 
 
-State 67
+状态 67
 
    22 expr: OBJECTID ASSIGN • expr
 
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '('         shift, and go to state 55
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
 
-    expr  go to state 91
+    expr  转到状态 91
 
 
-State 68
+状态 68
 
    25 expr: OBJECTID '(' • expr_list_dispatch ')'
    26     | OBJECTID '(' • ')'
 
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '('         shift, and go to state 55
-    ')'         shift, and go to state 92
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+    ')'         偏移，并进入状态 92
 
-    expr_list_dispatch  go to state 93
-    expr                go to state 94
+    expr_list_dispatch  转到状态 93
+    expr                转到状态 94
 
 
-State 69
+状态 69
 
    23 expr: expr • '.' OBJECTID '(' expr_list_dispatch ')'
    24     | expr • '.' OBJECTID '(' ')'
@@ -1011,20 +1011,20 @@ State 69
    43     | expr • '=' expr
    44     | NOT expr •
 
-    LE   shift, and go to state 74
-    '<'  shift, and go to state 75
-    '='  shift, and go to state 76
-    '+'  shift, and go to state 77
-    '-'  shift, and go to state 78
-    '*'  shift, and go to state 79
-    '/'  shift, and go to state 80
-    '@'  shift, and go to state 81
-    '.'  shift, and go to state 82
+    LE   偏移，并进入状态 74
+    '<'  偏移，并进入状态 75
+    '='  偏移，并进入状态 76
+    '+'  偏移，并进入状态 77
+    '-'  偏移，并进入状态 78
+    '*'  偏移，并进入状态 79
+    '/'  偏移，并进入状态 80
+    '@'  偏移，并进入状态 81
+    '.'  偏移，并进入状态 82
 
-    $default  reduce using rule 44 (expr)
+    $default  使用规则 44 以归约 (expr)
 
 
-State 70
+状态 70
 
    23 expr: expr • '.' OBJECTID '(' expr_list_dispatch ')'
    24     | expr • '.' OBJECTID '(' ')'
@@ -1039,39 +1039,39 @@ State 70
    42     | expr • LE expr
    43     | expr • '=' expr
 
-    '@'  shift, and go to state 81
-    '.'  shift, and go to state 82
+    '@'  偏移，并进入状态 81
+    '.'  偏移，并进入状态 82
 
-    $default  reduce using rule 40 (expr)
+    $default  使用规则 40 以归约 (expr)
 
 
-State 71
+状态 71
 
    20 expr_list_block: expr_list_block • expr ';'
    21                | expr_list_block • error ';'
    31 expr: '{' expr_list_block • '}'
 
-    error       shift, and go to state 95
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '}'         shift, and go to state 96
-    '('         shift, and go to state 55
+    error       偏移，并进入状态 95
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '}'         偏移，并进入状态 96
+    '('         偏移，并进入状态 55
 
-    expr  go to state 97
+    expr  转到状态 97
 
 
-State 72
+状态 72
 
    19 expr_list_block: expr • ';'
    23 expr: expr • '.' OBJECTID '(' expr_list_dispatch ')'
@@ -1086,19 +1086,19 @@ State 72
    42     | expr • LE expr
    43     | expr • '=' expr
 
-    LE   shift, and go to state 74
-    '<'  shift, and go to state 75
-    '='  shift, and go to state 76
-    '+'  shift, and go to state 77
-    '-'  shift, and go to state 78
-    '*'  shift, and go to state 79
-    '/'  shift, and go to state 80
-    '@'  shift, and go to state 81
-    '.'  shift, and go to state 82
-    ';'  shift, and go to state 98
+    LE   偏移，并进入状态 74
+    '<'  偏移，并进入状态 75
+    '='  偏移，并进入状态 76
+    '+'  偏移，并进入状态 77
+    '-'  偏移，并进入状态 78
+    '*'  偏移，并进入状态 79
+    '/'  偏移，并进入状态 80
+    '@'  偏移，并进入状态 81
+    '.'  偏移，并进入状态 82
+    ';'  偏移，并进入状态 98
 
 
-State 73
+状态 73
 
    23 expr: expr • '.' OBJECTID '(' expr_list_dispatch ')'
    24     | expr • '.' OBJECTID '(' ')'
@@ -1113,196 +1113,196 @@ State 73
    43     | expr • '=' expr
    45     | '(' expr • ')'
 
-    LE   shift, and go to state 74
-    '<'  shift, and go to state 75
-    '='  shift, and go to state 76
-    '+'  shift, and go to state 77
-    '-'  shift, and go to state 78
-    '*'  shift, and go to state 79
-    '/'  shift, and go to state 80
-    '@'  shift, and go to state 81
-    '.'  shift, and go to state 82
-    ')'  shift, and go to state 99
+    LE   偏移，并进入状态 74
+    '<'  偏移，并进入状态 75
+    '='  偏移，并进入状态 76
+    '+'  偏移，并进入状态 77
+    '-'  偏移，并进入状态 78
+    '*'  偏移，并进入状态 79
+    '/'  偏移，并进入状态 80
+    '@'  偏移，并进入状态 81
+    '.'  偏移，并进入状态 82
+    ')'  偏移，并进入状态 99
 
 
-State 74
+状态 74
 
    42 expr: expr LE • expr
 
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '('         shift, and go to state 55
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
 
-    expr  go to state 100
+    expr  转到状态 100
 
 
-State 75
+状态 75
 
    41 expr: expr '<' • expr
 
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '('         shift, and go to state 55
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
 
-    expr  go to state 101
+    expr  转到状态 101
 
 
-State 76
+状态 76
 
    43 expr: expr '=' • expr
 
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '('         shift, and go to state 55
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
 
-    expr  go to state 102
+    expr  转到状态 102
 
 
-State 77
+状态 77
 
    36 expr: expr '+' • expr
 
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '('         shift, and go to state 55
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
 
-    expr  go to state 103
+    expr  转到状态 103
 
 
-State 78
+状态 78
 
    37 expr: expr '-' • expr
 
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '('         shift, and go to state 55
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
 
-    expr  go to state 104
+    expr  转到状态 104
 
 
-State 79
+状态 79
 
    38 expr: expr '*' • expr
 
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '('         shift, and go to state 55
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
 
-    expr  go to state 105
+    expr  转到状态 105
 
 
-State 80
+状态 80
 
    39 expr: expr '/' • expr
 
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '('         shift, and go to state 55
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
 
-    expr  go to state 106
+    expr  转到状态 106
 
 
-State 81
+状态 81
 
    27 expr: expr '@' • TYPEID '.' OBJECTID '(' expr_list_dispatch ')'
    28     | expr '@' • TYPEID '.' OBJECTID '(' ')'
 
-    TYPEID  shift, and go to state 107
+    TYPEID  偏移，并进入状态 107
 
 
-State 82
+状态 82
 
    23 expr: expr '.' • OBJECTID '(' expr_list_dispatch ')'
    24     | expr '.' • OBJECTID '(' ')'
 
-    OBJECTID  shift, and go to state 108
+    OBJECTID  偏移，并进入状态 108
 
 
-State 83
+状态 83
 
    12 feature: OBJECTID ':' TYPEID ASSIGN expr ';' •
 
-    $default  reduce using rule 12 (feature)
+    $default  使用规则 12 以归约 (feature)
 
 
-State 84
+状态 84
 
    11 feature: OBJECTID '(' ')' ':' TYPEID '{' expr • '}' ';'
    23 expr: expr • '.' OBJECTID '(' expr_list_dispatch ')'
@@ -1317,114 +1317,114 @@ State 84
    42     | expr • LE expr
    43     | expr • '=' expr
 
-    LE   shift, and go to state 74
-    '<'  shift, and go to state 75
-    '='  shift, and go to state 76
-    '+'  shift, and go to state 77
-    '-'  shift, and go to state 78
-    '*'  shift, and go to state 79
-    '/'  shift, and go to state 80
-    '@'  shift, and go to state 81
-    '.'  shift, and go to state 82
-    '}'  shift, and go to state 109
+    LE   偏移，并进入状态 74
+    '<'  偏移，并进入状态 75
+    '='  偏移，并进入状态 76
+    '+'  偏移，并进入状态 77
+    '-'  偏移，并进入状态 78
+    '*'  偏移，并进入状态 79
+    '/'  偏移，并进入状态 80
+    '@'  偏移，并进入状态 81
+    '.'  偏移，并进入状态 82
+    '}'  偏移，并进入状态 109
 
 
-State 85
+状态 85
 
    10 feature: OBJECTID '(' formal_list ')' ':' TYPEID '{' • expr '}' ';'
 
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '('         shift, and go to state 55
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
 
-    expr  go to state 110
+    expr  转到状态 110
 
 
-State 86
+状态 86
 
    29 expr: IF expr THEN • expr ELSE expr FI
 
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '('         shift, and go to state 55
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
 
-    expr  go to state 111
+    expr  转到状态 111
 
 
-State 87
+状态 87
 
    54 expr_let: error ',' • expr_let
 
-    error     shift, and go to state 60
-    OBJECTID  shift, and go to state 61
+    error     偏移，并进入状态 60
+    OBJECTID  偏移，并进入状态 61
 
-    expr_let  go to state 112
+    expr_let  转到状态 112
 
 
-State 88
+状态 88
 
    50 expr_let: OBJECTID ':' • TYPEID IN expr
    51         | OBJECTID ':' • TYPEID ASSIGN expr IN expr
    52         | OBJECTID ':' • TYPEID ',' expr_let
    53         | OBJECTID ':' • TYPEID ASSIGN expr ',' expr_let
 
-    TYPEID  shift, and go to state 113
+    TYPEID  偏移，并进入状态 113
 
 
-State 89
+状态 89
 
    30 expr: WHILE expr LOOP • expr POOL
 
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '('         shift, and go to state 55
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
 
-    expr  go to state 114
+    expr  转到状态 114
 
 
-State 90
+状态 90
 
    33 expr: CASE expr OF • case_list ESAC
 
-    $default  reduce using rule 55 (case_list)
+    $default  使用规则 55 以归约 (case_list)
 
-    case_list  go to state 115
+    case_list  转到状态 115
 
 
-State 91
+状态 91
 
    22 expr: OBJECTID ASSIGN expr •
    23     | expr • '.' OBJECTID '(' expr_list_dispatch ')'
@@ -1439,36 +1439,36 @@ State 91
    42     | expr • LE expr
    43     | expr • '=' expr
 
-    LE   shift, and go to state 74
-    '<'  shift, and go to state 75
-    '='  shift, and go to state 76
-    '+'  shift, and go to state 77
-    '-'  shift, and go to state 78
-    '*'  shift, and go to state 79
-    '/'  shift, and go to state 80
-    '@'  shift, and go to state 81
-    '.'  shift, and go to state 82
+    LE   偏移，并进入状态 74
+    '<'  偏移，并进入状态 75
+    '='  偏移，并进入状态 76
+    '+'  偏移，并进入状态 77
+    '-'  偏移，并进入状态 78
+    '*'  偏移，并进入状态 79
+    '/'  偏移，并进入状态 80
+    '@'  偏移，并进入状态 81
+    '.'  偏移，并进入状态 82
 
-    $default  reduce using rule 22 (expr)
+    $default  使用规则 22 以归约 (expr)
 
 
-State 92
+状态 92
 
    26 expr: OBJECTID '(' ')' •
 
-    $default  reduce using rule 26 (expr)
+    $default  使用规则 26 以归约 (expr)
 
 
-State 93
+状态 93
 
    18 expr_list_dispatch: expr_list_dispatch • ',' expr
    25 expr: OBJECTID '(' expr_list_dispatch • ')'
 
-    ')'  shift, and go to state 116
-    ','  shift, and go to state 117
+    ')'  偏移，并进入状态 116
+    ','  偏移，并进入状态 117
 
 
-State 94
+状态 94
 
    17 expr_list_dispatch: expr •
    23 expr: expr • '.' OBJECTID '(' expr_list_dispatch ')'
@@ -1483,34 +1483,34 @@ State 94
    42     | expr • LE expr
    43     | expr • '=' expr
 
-    LE   shift, and go to state 74
-    '<'  shift, and go to state 75
-    '='  shift, and go to state 76
-    '+'  shift, and go to state 77
-    '-'  shift, and go to state 78
-    '*'  shift, and go to state 79
-    '/'  shift, and go to state 80
-    '@'  shift, and go to state 81
-    '.'  shift, and go to state 82
+    LE   偏移，并进入状态 74
+    '<'  偏移，并进入状态 75
+    '='  偏移，并进入状态 76
+    '+'  偏移，并进入状态 77
+    '-'  偏移，并进入状态 78
+    '*'  偏移，并进入状态 79
+    '/'  偏移，并进入状态 80
+    '@'  偏移，并进入状态 81
+    '.'  偏移，并进入状态 82
 
-    $default  reduce using rule 17 (expr_list_dispatch)
+    $default  使用规则 17 以归约 (expr_list_dispatch)
 
 
-State 95
+状态 95
 
    21 expr_list_block: expr_list_block error • ';'
 
-    ';'  shift, and go to state 118
+    ';'  偏移，并进入状态 118
 
 
-State 96
+状态 96
 
    31 expr: '{' expr_list_block '}' •
 
-    $default  reduce using rule 31 (expr)
+    $default  使用规则 31 以归约 (expr)
 
 
-State 97
+状态 97
 
    20 expr_list_block: expr_list_block expr • ';'
    23 expr: expr • '.' OBJECTID '(' expr_list_dispatch ')'
@@ -1525,33 +1525,33 @@ State 97
    42     | expr • LE expr
    43     | expr • '=' expr
 
-    LE   shift, and go to state 74
-    '<'  shift, and go to state 75
-    '='  shift, and go to state 76
-    '+'  shift, and go to state 77
-    '-'  shift, and go to state 78
-    '*'  shift, and go to state 79
-    '/'  shift, and go to state 80
-    '@'  shift, and go to state 81
-    '.'  shift, and go to state 82
-    ';'  shift, and go to state 119
+    LE   偏移，并进入状态 74
+    '<'  偏移，并进入状态 75
+    '='  偏移，并进入状态 76
+    '+'  偏移，并进入状态 77
+    '-'  偏移，并进入状态 78
+    '*'  偏移，并进入状态 79
+    '/'  偏移，并进入状态 80
+    '@'  偏移，并进入状态 81
+    '.'  偏移，并进入状态 82
+    ';'  偏移，并进入状态 119
 
 
-State 98
+状态 98
 
    19 expr_list_block: expr ';' •
 
-    $default  reduce using rule 19 (expr_list_block)
+    $default  使用规则 19 以归约 (expr_list_block)
 
 
-State 99
+状态 99
 
    45 expr: '(' expr ')' •
 
-    $default  reduce using rule 45 (expr)
+    $default  使用规则 45 以归约 (expr)
 
 
-State 100
+状态 100
 
    23 expr: expr • '.' OBJECTID '(' expr_list_dispatch ')'
    24     | expr • '.' OBJECTID '(' ')'
@@ -1566,21 +1566,21 @@ State 100
    42     | expr LE expr •
    43     | expr • '=' expr
 
-    '+'  shift, and go to state 77
-    '-'  shift, and go to state 78
-    '*'  shift, and go to state 79
-    '/'  shift, and go to state 80
-    '@'  shift, and go to state 81
-    '.'  shift, and go to state 82
+    '+'  偏移，并进入状态 77
+    '-'  偏移，并进入状态 78
+    '*'  偏移，并进入状态 79
+    '/'  偏移，并进入状态 80
+    '@'  偏移，并进入状态 81
+    '.'  偏移，并进入状态 82
 
-    LE   error (nonassociative)
-    '<'  error (nonassociative)
-    '='  error (nonassociative)
+    LE   错误 (非相联的)
+    '<'  错误 (非相联的)
+    '='  错误 (非相联的)
 
-    $default  reduce using rule 42 (expr)
+    $default  使用规则 42 以归约 (expr)
 
 
-State 101
+状态 101
 
    23 expr: expr • '.' OBJECTID '(' expr_list_dispatch ')'
    24     | expr • '.' OBJECTID '(' ')'
@@ -1595,21 +1595,21 @@ State 101
    42     | expr • LE expr
    43     | expr • '=' expr
 
-    '+'  shift, and go to state 77
-    '-'  shift, and go to state 78
-    '*'  shift, and go to state 79
-    '/'  shift, and go to state 80
-    '@'  shift, and go to state 81
-    '.'  shift, and go to state 82
+    '+'  偏移，并进入状态 77
+    '-'  偏移，并进入状态 78
+    '*'  偏移，并进入状态 79
+    '/'  偏移，并进入状态 80
+    '@'  偏移，并进入状态 81
+    '.'  偏移，并进入状态 82
 
-    LE   error (nonassociative)
-    '<'  error (nonassociative)
-    '='  error (nonassociative)
+    LE   错误 (非相联的)
+    '<'  错误 (非相联的)
+    '='  错误 (非相联的)
 
-    $default  reduce using rule 41 (expr)
+    $default  使用规则 41 以归约 (expr)
 
 
-State 102
+状态 102
 
    23 expr: expr • '.' OBJECTID '(' expr_list_dispatch ')'
    24     | expr • '.' OBJECTID '(' ')'
@@ -1624,21 +1624,21 @@ State 102
    43     | expr • '=' expr
    43     | expr '=' expr •
 
-    '+'  shift, and go to state 77
-    '-'  shift, and go to state 78
-    '*'  shift, and go to state 79
-    '/'  shift, and go to state 80
-    '@'  shift, and go to state 81
-    '.'  shift, and go to state 82
+    '+'  偏移，并进入状态 77
+    '-'  偏移，并进入状态 78
+    '*'  偏移，并进入状态 79
+    '/'  偏移，并进入状态 80
+    '@'  偏移，并进入状态 81
+    '.'  偏移，并进入状态 82
 
-    LE   error (nonassociative)
-    '<'  error (nonassociative)
-    '='  error (nonassociative)
+    LE   错误 (非相联的)
+    '<'  错误 (非相联的)
+    '='  错误 (非相联的)
 
-    $default  reduce using rule 43 (expr)
+    $default  使用规则 43 以归约 (expr)
 
 
-State 103
+状态 103
 
    23 expr: expr • '.' OBJECTID '(' expr_list_dispatch ')'
    24     | expr • '.' OBJECTID '(' ')'
@@ -1653,15 +1653,15 @@ State 103
    42     | expr • LE expr
    43     | expr • '=' expr
 
-    '*'  shift, and go to state 79
-    '/'  shift, and go to state 80
-    '@'  shift, and go to state 81
-    '.'  shift, and go to state 82
+    '*'  偏移，并进入状态 79
+    '/'  偏移，并进入状态 80
+    '@'  偏移，并进入状态 81
+    '.'  偏移，并进入状态 82
 
-    $default  reduce using rule 36 (expr)
+    $default  使用规则 36 以归约 (expr)
 
 
-State 104
+状态 104
 
    23 expr: expr • '.' OBJECTID '(' expr_list_dispatch ')'
    24     | expr • '.' OBJECTID '(' ')'
@@ -1676,15 +1676,15 @@ State 104
    42     | expr • LE expr
    43     | expr • '=' expr
 
-    '*'  shift, and go to state 79
-    '/'  shift, and go to state 80
-    '@'  shift, and go to state 81
-    '.'  shift, and go to state 82
+    '*'  偏移，并进入状态 79
+    '/'  偏移，并进入状态 80
+    '@'  偏移，并进入状态 81
+    '.'  偏移，并进入状态 82
 
-    $default  reduce using rule 37 (expr)
+    $default  使用规则 37 以归约 (expr)
 
 
-State 105
+状态 105
 
    23 expr: expr • '.' OBJECTID '(' expr_list_dispatch ')'
    24     | expr • '.' OBJECTID '(' ')'
@@ -1699,13 +1699,13 @@ State 105
    42     | expr • LE expr
    43     | expr • '=' expr
 
-    '@'  shift, and go to state 81
-    '.'  shift, and go to state 82
+    '@'  偏移，并进入状态 81
+    '.'  偏移，并进入状态 82
 
-    $default  reduce using rule 38 (expr)
+    $default  使用规则 38 以归约 (expr)
 
 
-State 106
+状态 106
 
    23 expr: expr • '.' OBJECTID '(' expr_list_dispatch ')'
    24     | expr • '.' OBJECTID '(' ')'
@@ -1720,36 +1720,36 @@ State 106
    42     | expr • LE expr
    43     | expr • '=' expr
 
-    '@'  shift, and go to state 81
-    '.'  shift, and go to state 82
+    '@'  偏移，并进入状态 81
+    '.'  偏移，并进入状态 82
 
-    $default  reduce using rule 39 (expr)
+    $default  使用规则 39 以归约 (expr)
 
 
-State 107
+状态 107
 
    27 expr: expr '@' TYPEID • '.' OBJECTID '(' expr_list_dispatch ')'
    28     | expr '@' TYPEID • '.' OBJECTID '(' ')'
 
-    '.'  shift, and go to state 120
+    '.'  偏移，并进入状态 120
 
 
-State 108
+状态 108
 
    23 expr: expr '.' OBJECTID • '(' expr_list_dispatch ')'
    24     | expr '.' OBJECTID • '(' ')'
 
-    '('  shift, and go to state 121
+    '('  偏移，并进入状态 121
 
 
-State 109
+状态 109
 
    11 feature: OBJECTID '(' ')' ':' TYPEID '{' expr '}' • ';'
 
-    ';'  shift, and go to state 122
+    ';'  偏移，并进入状态 122
 
 
-State 110
+状态 110
 
    10 feature: OBJECTID '(' formal_list ')' ':' TYPEID '{' expr • '}' ';'
    23 expr: expr • '.' OBJECTID '(' expr_list_dispatch ')'
@@ -1764,19 +1764,19 @@ State 110
    42     | expr • LE expr
    43     | expr • '=' expr
 
-    LE   shift, and go to state 74
-    '<'  shift, and go to state 75
-    '='  shift, and go to state 76
-    '+'  shift, and go to state 77
-    '-'  shift, and go to state 78
-    '*'  shift, and go to state 79
-    '/'  shift, and go to state 80
-    '@'  shift, and go to state 81
-    '.'  shift, and go to state 82
-    '}'  shift, and go to state 123
+    LE   偏移，并进入状态 74
+    '<'  偏移，并进入状态 75
+    '='  偏移，并进入状态 76
+    '+'  偏移，并进入状态 77
+    '-'  偏移，并进入状态 78
+    '*'  偏移，并进入状态 79
+    '/'  偏移，并进入状态 80
+    '@'  偏移，并进入状态 81
+    '.'  偏移，并进入状态 82
+    '}'  偏移，并进入状态 123
 
 
-State 111
+状态 111
 
    23 expr: expr • '.' OBJECTID '(' expr_list_dispatch ')'
    24     | expr • '.' OBJECTID '(' ')'
@@ -1791,38 +1791,38 @@ State 111
    42     | expr • LE expr
    43     | expr • '=' expr
 
-    ELSE  shift, and go to state 124
-    LE    shift, and go to state 74
-    '<'   shift, and go to state 75
-    '='   shift, and go to state 76
-    '+'   shift, and go to state 77
-    '-'   shift, and go to state 78
-    '*'   shift, and go to state 79
-    '/'   shift, and go to state 80
-    '@'   shift, and go to state 81
-    '.'   shift, and go to state 82
+    ELSE  偏移，并进入状态 124
+    LE    偏移，并进入状态 74
+    '<'   偏移，并进入状态 75
+    '='   偏移，并进入状态 76
+    '+'   偏移，并进入状态 77
+    '-'   偏移，并进入状态 78
+    '*'   偏移，并进入状态 79
+    '/'   偏移，并进入状态 80
+    '@'   偏移，并进入状态 81
+    '.'   偏移，并进入状态 82
 
 
-State 112
+状态 112
 
    54 expr_let: error ',' expr_let •
 
-    $default  reduce using rule 54 (expr_let)
+    $default  使用规则 54 以归约 (expr_let)
 
 
-State 113
+状态 113
 
    50 expr_let: OBJECTID ':' TYPEID • IN expr
    51         | OBJECTID ':' TYPEID • ASSIGN expr IN expr
    52         | OBJECTID ':' TYPEID • ',' expr_let
    53         | OBJECTID ':' TYPEID • ASSIGN expr ',' expr_let
 
-    IN      shift, and go to state 125
-    ASSIGN  shift, and go to state 126
-    ','     shift, and go to state 127
+    IN      偏移，并进入状态 125
+    ASSIGN  偏移，并进入状态 126
+    ','     偏移，并进入状态 127
 
 
-State 114
+状态 114
 
    23 expr: expr • '.' OBJECTID '(' expr_list_dispatch ')'
    24     | expr • '.' OBJECTID '(' ')'
@@ -1837,225 +1837,225 @@ State 114
    42     | expr • LE expr
    43     | expr • '=' expr
 
-    POOL  shift, and go to state 128
-    LE    shift, and go to state 74
-    '<'   shift, and go to state 75
-    '='   shift, and go to state 76
-    '+'   shift, and go to state 77
-    '-'   shift, and go to state 78
-    '*'   shift, and go to state 79
-    '/'   shift, and go to state 80
-    '@'   shift, and go to state 81
-    '.'   shift, and go to state 82
+    POOL  偏移，并进入状态 128
+    LE    偏移，并进入状态 74
+    '<'   偏移，并进入状态 75
+    '='   偏移，并进入状态 76
+    '+'   偏移，并进入状态 77
+    '-'   偏移，并进入状态 78
+    '*'   偏移，并进入状态 79
+    '/'   偏移，并进入状态 80
+    '@'   偏移，并进入状态 81
+    '.'   偏移，并进入状态 82
 
 
-State 115
+状态 115
 
    33 expr: CASE expr OF case_list • ESAC
    56 case_list: case_list • case
 
-    ESAC      shift, and go to state 129
-    OBJECTID  shift, and go to state 130
+    ESAC      偏移，并进入状态 129
+    OBJECTID  偏移，并进入状态 130
 
-    case  go to state 131
+    case  转到状态 131
 
 
-State 116
+状态 116
 
    25 expr: OBJECTID '(' expr_list_dispatch ')' •
 
-    $default  reduce using rule 25 (expr)
+    $default  使用规则 25 以归约 (expr)
 
 
-State 117
+状态 117
 
    18 expr_list_dispatch: expr_list_dispatch ',' • expr
 
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '('         shift, and go to state 55
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
 
-    expr  go to state 132
+    expr  转到状态 132
 
 
-State 118
+状态 118
 
    21 expr_list_block: expr_list_block error ';' •
 
-    $default  reduce using rule 21 (expr_list_block)
+    $default  使用规则 21 以归约 (expr_list_block)
 
 
-State 119
+状态 119
 
    20 expr_list_block: expr_list_block expr ';' •
 
-    $default  reduce using rule 20 (expr_list_block)
+    $default  使用规则 20 以归约 (expr_list_block)
 
 
-State 120
+状态 120
 
    27 expr: expr '@' TYPEID '.' • OBJECTID '(' expr_list_dispatch ')'
    28     | expr '@' TYPEID '.' • OBJECTID '(' ')'
 
-    OBJECTID  shift, and go to state 133
+    OBJECTID  偏移，并进入状态 133
 
 
-State 121
+状态 121
 
    23 expr: expr '.' OBJECTID '(' • expr_list_dispatch ')'
    24     | expr '.' OBJECTID '(' • ')'
 
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '('         shift, and go to state 55
-    ')'         shift, and go to state 134
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+    ')'         偏移，并进入状态 134
 
-    expr_list_dispatch  go to state 135
-    expr                go to state 94
+    expr_list_dispatch  转到状态 135
+    expr                转到状态 94
 
 
-State 122
+状态 122
 
    11 feature: OBJECTID '(' ')' ':' TYPEID '{' expr '}' ';' •
 
-    $default  reduce using rule 11 (feature)
+    $default  使用规则 11 以归约 (feature)
 
 
-State 123
+状态 123
 
    10 feature: OBJECTID '(' formal_list ')' ':' TYPEID '{' expr '}' • ';'
 
-    ';'  shift, and go to state 136
+    ';'  偏移，并进入状态 136
 
 
-State 124
+状态 124
 
    29 expr: IF expr THEN expr ELSE • expr FI
 
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '('         shift, and go to state 55
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
 
-    expr  go to state 137
+    expr  转到状态 137
 
 
-State 125
+状态 125
 
    50 expr_let: OBJECTID ':' TYPEID IN • expr
 
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '('         shift, and go to state 55
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
 
-    expr  go to state 138
+    expr  转到状态 138
 
 
-State 126
+状态 126
 
    51 expr_let: OBJECTID ':' TYPEID ASSIGN • expr IN expr
    53         | OBJECTID ':' TYPEID ASSIGN • expr ',' expr_let
 
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '('         shift, and go to state 55
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
 
-    expr  go to state 139
+    expr  转到状态 139
 
 
-State 127
+状态 127
 
    52 expr_let: OBJECTID ':' TYPEID ',' • expr_let
 
-    error     shift, and go to state 60
-    OBJECTID  shift, and go to state 61
+    error     偏移，并进入状态 60
+    OBJECTID  偏移，并进入状态 61
 
-    expr_let  go to state 140
+    expr_let  转到状态 140
 
 
-State 128
+状态 128
 
    30 expr: WHILE expr LOOP expr POOL •
 
-    $default  reduce using rule 30 (expr)
+    $default  使用规则 30 以归约 (expr)
 
 
-State 129
+状态 129
 
    33 expr: CASE expr OF case_list ESAC •
 
-    $default  reduce using rule 33 (expr)
+    $default  使用规则 33 以归约 (expr)
 
 
-State 130
+状态 130
 
    57 case: OBJECTID • ':' TYPEID DARROW expr ';'
 
-    ':'  shift, and go to state 141
+    ':'  偏移，并进入状态 141
 
 
-State 131
+状态 131
 
    56 case_list: case_list case •
 
-    $default  reduce using rule 56 (case_list)
+    $default  使用规则 56 以归约 (case_list)
 
 
-State 132
+状态 132
 
    18 expr_list_dispatch: expr_list_dispatch ',' expr •
    23 expr: expr • '.' OBJECTID '(' expr_list_dispatch ')'
@@ -2070,51 +2070,51 @@ State 132
    42     | expr • LE expr
    43     | expr • '=' expr
 
-    LE   shift, and go to state 74
-    '<'  shift, and go to state 75
-    '='  shift, and go to state 76
-    '+'  shift, and go to state 77
-    '-'  shift, and go to state 78
-    '*'  shift, and go to state 79
-    '/'  shift, and go to state 80
-    '@'  shift, and go to state 81
-    '.'  shift, and go to state 82
+    LE   偏移，并进入状态 74
+    '<'  偏移，并进入状态 75
+    '='  偏移，并进入状态 76
+    '+'  偏移，并进入状态 77
+    '-'  偏移，并进入状态 78
+    '*'  偏移，并进入状态 79
+    '/'  偏移，并进入状态 80
+    '@'  偏移，并进入状态 81
+    '.'  偏移，并进入状态 82
 
-    $default  reduce using rule 18 (expr_list_dispatch)
+    $default  使用规则 18 以归约 (expr_list_dispatch)
 
 
-State 133
+状态 133
 
    27 expr: expr '@' TYPEID '.' OBJECTID • '(' expr_list_dispatch ')'
    28     | expr '@' TYPEID '.' OBJECTID • '(' ')'
 
-    '('  shift, and go to state 142
+    '('  偏移，并进入状态 142
 
 
-State 134
+状态 134
 
    24 expr: expr '.' OBJECTID '(' ')' •
 
-    $default  reduce using rule 24 (expr)
+    $default  使用规则 24 以归约 (expr)
 
 
-State 135
+状态 135
 
    18 expr_list_dispatch: expr_list_dispatch • ',' expr
    23 expr: expr '.' OBJECTID '(' expr_list_dispatch • ')'
 
-    ')'  shift, and go to state 143
-    ','  shift, and go to state 117
+    ')'  偏移，并进入状态 143
+    ','  偏移，并进入状态 117
 
 
-State 136
+状态 136
 
    10 feature: OBJECTID '(' formal_list ')' ':' TYPEID '{' expr '}' ';' •
 
-    $default  reduce using rule 10 (feature)
+    $default  使用规则 10 以归约 (feature)
 
 
-State 137
+状态 137
 
    23 expr: expr • '.' OBJECTID '(' expr_list_dispatch ')'
    24     | expr • '.' OBJECTID '(' ')'
@@ -2129,19 +2129,19 @@ State 137
    42     | expr • LE expr
    43     | expr • '=' expr
 
-    FI   shift, and go to state 144
-    LE   shift, and go to state 74
-    '<'  shift, and go to state 75
-    '='  shift, and go to state 76
-    '+'  shift, and go to state 77
-    '-'  shift, and go to state 78
-    '*'  shift, and go to state 79
-    '/'  shift, and go to state 80
-    '@'  shift, and go to state 81
-    '.'  shift, and go to state 82
+    FI   偏移，并进入状态 144
+    LE   偏移，并进入状态 74
+    '<'  偏移，并进入状态 75
+    '='  偏移，并进入状态 76
+    '+'  偏移，并进入状态 77
+    '-'  偏移，并进入状态 78
+    '*'  偏移，并进入状态 79
+    '/'  偏移，并进入状态 80
+    '@'  偏移，并进入状态 81
+    '.'  偏移，并进入状态 82
 
 
-State 138
+状态 138
 
    23 expr: expr • '.' OBJECTID '(' expr_list_dispatch ')'
    24     | expr • '.' OBJECTID '(' ')'
@@ -2156,29 +2156,29 @@ State 138
    43     | expr • '=' expr
    50 expr_let: OBJECTID ':' TYPEID IN expr •
 
-    LE   shift, and go to state 74
-    '<'  shift, and go to state 75
-    '='  shift, and go to state 76
-    '+'  shift, and go to state 77
-    '-'  shift, and go to state 78
-    '*'  shift, and go to state 79
-    '/'  shift, and go to state 80
-    '@'  shift, and go to state 81
-    '.'  shift, and go to state 82
+    LE   偏移，并进入状态 74
+    '<'  偏移，并进入状态 75
+    '='  偏移，并进入状态 76
+    '+'  偏移，并进入状态 77
+    '-'  偏移，并进入状态 78
+    '*'  偏移，并进入状态 79
+    '/'  偏移，并进入状态 80
+    '@'  偏移，并进入状态 81
+    '.'  偏移，并进入状态 82
 
-    LE        [reduce using rule 50 (expr_let)]
-    '<'       [reduce using rule 50 (expr_let)]
-    '='       [reduce using rule 50 (expr_let)]
-    '+'       [reduce using rule 50 (expr_let)]
-    '-'       [reduce using rule 50 (expr_let)]
-    '*'       [reduce using rule 50 (expr_let)]
-    '/'       [reduce using rule 50 (expr_let)]
-    '@'       [reduce using rule 50 (expr_let)]
-    '.'       [reduce using rule 50 (expr_let)]
-    $default  reduce using rule 50 (expr_let)
+    LE        [使用规则 50 以归约 (expr_let)]
+    '<'       [使用规则 50 以归约 (expr_let)]
+    '='       [使用规则 50 以归约 (expr_let)]
+    '+'       [使用规则 50 以归约 (expr_let)]
+    '-'       [使用规则 50 以归约 (expr_let)]
+    '*'       [使用规则 50 以归约 (expr_let)]
+    '/'       [使用规则 50 以归约 (expr_let)]
+    '@'       [使用规则 50 以归约 (expr_let)]
+    '.'       [使用规则 50 以归约 (expr_let)]
+    $default  使用规则 50 以归约 (expr_let)
 
 
-State 139
+状态 139
 
    23 expr: expr • '.' OBJECTID '(' expr_list_dispatch ')'
    24     | expr • '.' OBJECTID '(' ')'
@@ -2194,128 +2194,128 @@ State 139
    51 expr_let: OBJECTID ':' TYPEID ASSIGN expr • IN expr
    53         | OBJECTID ':' TYPEID ASSIGN expr • ',' expr_let
 
-    IN   shift, and go to state 145
-    LE   shift, and go to state 74
-    '<'  shift, and go to state 75
-    '='  shift, and go to state 76
-    '+'  shift, and go to state 77
-    '-'  shift, and go to state 78
-    '*'  shift, and go to state 79
-    '/'  shift, and go to state 80
-    '@'  shift, and go to state 81
-    '.'  shift, and go to state 82
-    ','  shift, and go to state 146
+    IN   偏移，并进入状态 145
+    LE   偏移，并进入状态 74
+    '<'  偏移，并进入状态 75
+    '='  偏移，并进入状态 76
+    '+'  偏移，并进入状态 77
+    '-'  偏移，并进入状态 78
+    '*'  偏移，并进入状态 79
+    '/'  偏移，并进入状态 80
+    '@'  偏移，并进入状态 81
+    '.'  偏移，并进入状态 82
+    ','  偏移，并进入状态 146
 
 
-State 140
+状态 140
 
    52 expr_let: OBJECTID ':' TYPEID ',' expr_let •
 
-    $default  reduce using rule 52 (expr_let)
+    $default  使用规则 52 以归约 (expr_let)
 
 
-State 141
+状态 141
 
    57 case: OBJECTID ':' • TYPEID DARROW expr ';'
 
-    TYPEID  shift, and go to state 147
+    TYPEID  偏移，并进入状态 147
 
 
-State 142
+状态 142
 
    27 expr: expr '@' TYPEID '.' OBJECTID '(' • expr_list_dispatch ')'
    28     | expr '@' TYPEID '.' OBJECTID '(' • ')'
 
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '('         shift, and go to state 55
-    ')'         shift, and go to state 148
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+    ')'         偏移，并进入状态 148
 
-    expr_list_dispatch  go to state 149
-    expr                go to state 94
+    expr_list_dispatch  转到状态 149
+    expr                转到状态 94
 
 
-State 143
+状态 143
 
    23 expr: expr '.' OBJECTID '(' expr_list_dispatch ')' •
 
-    $default  reduce using rule 23 (expr)
+    $default  使用规则 23 以归约 (expr)
 
 
-State 144
+状态 144
 
    29 expr: IF expr THEN expr ELSE expr FI •
 
-    $default  reduce using rule 29 (expr)
+    $default  使用规则 29 以归约 (expr)
 
 
-State 145
+状态 145
 
    51 expr_let: OBJECTID ':' TYPEID ASSIGN expr IN • expr
 
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '('         shift, and go to state 55
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
 
-    expr  go to state 150
+    expr  转到状态 150
 
 
-State 146
+状态 146
 
    53 expr_let: OBJECTID ':' TYPEID ASSIGN expr ',' • expr_let
 
-    error     shift, and go to state 60
-    OBJECTID  shift, and go to state 61
+    error     偏移，并进入状态 60
+    OBJECTID  偏移，并进入状态 61
 
-    expr_let  go to state 151
+    expr_let  转到状态 151
 
 
-State 147
+状态 147
 
    57 case: OBJECTID ':' TYPEID • DARROW expr ';'
 
-    DARROW  shift, and go to state 152
+    DARROW  偏移，并进入状态 152
 
 
-State 148
+状态 148
 
    28 expr: expr '@' TYPEID '.' OBJECTID '(' ')' •
 
-    $default  reduce using rule 28 (expr)
+    $default  使用规则 28 以归约 (expr)
 
 
-State 149
+状态 149
 
    18 expr_list_dispatch: expr_list_dispatch • ',' expr
    27 expr: expr '@' TYPEID '.' OBJECTID '(' expr_list_dispatch • ')'
 
-    ')'  shift, and go to state 153
-    ','  shift, and go to state 117
+    ')'  偏移，并进入状态 153
+    ','  偏移，并进入状态 117
 
 
-State 150
+状态 150
 
    23 expr: expr • '.' OBJECTID '(' expr_list_dispatch ')'
    24     | expr • '.' OBJECTID '(' ')'
@@ -2330,65 +2330,65 @@ State 150
    43     | expr • '=' expr
    51 expr_let: OBJECTID ':' TYPEID ASSIGN expr IN expr •
 
-    LE   shift, and go to state 74
-    '<'  shift, and go to state 75
-    '='  shift, and go to state 76
-    '+'  shift, and go to state 77
-    '-'  shift, and go to state 78
-    '*'  shift, and go to state 79
-    '/'  shift, and go to state 80
-    '@'  shift, and go to state 81
-    '.'  shift, and go to state 82
+    LE   偏移，并进入状态 74
+    '<'  偏移，并进入状态 75
+    '='  偏移，并进入状态 76
+    '+'  偏移，并进入状态 77
+    '-'  偏移，并进入状态 78
+    '*'  偏移，并进入状态 79
+    '/'  偏移，并进入状态 80
+    '@'  偏移，并进入状态 81
+    '.'  偏移，并进入状态 82
 
-    LE        [reduce using rule 51 (expr_let)]
-    '<'       [reduce using rule 51 (expr_let)]
-    '='       [reduce using rule 51 (expr_let)]
-    '+'       [reduce using rule 51 (expr_let)]
-    '-'       [reduce using rule 51 (expr_let)]
-    '*'       [reduce using rule 51 (expr_let)]
-    '/'       [reduce using rule 51 (expr_let)]
-    '@'       [reduce using rule 51 (expr_let)]
-    '.'       [reduce using rule 51 (expr_let)]
-    $default  reduce using rule 51 (expr_let)
+    LE        [使用规则 51 以归约 (expr_let)]
+    '<'       [使用规则 51 以归约 (expr_let)]
+    '='       [使用规则 51 以归约 (expr_let)]
+    '+'       [使用规则 51 以归约 (expr_let)]
+    '-'       [使用规则 51 以归约 (expr_let)]
+    '*'       [使用规则 51 以归约 (expr_let)]
+    '/'       [使用规则 51 以归约 (expr_let)]
+    '@'       [使用规则 51 以归约 (expr_let)]
+    '.'       [使用规则 51 以归约 (expr_let)]
+    $default  使用规则 51 以归约 (expr_let)
 
 
-State 151
+状态 151
 
    53 expr_let: OBJECTID ':' TYPEID ASSIGN expr ',' expr_let •
 
-    $default  reduce using rule 53 (expr_let)
+    $default  使用规则 53 以归约 (expr_let)
 
 
-State 152
+状态 152
 
    57 case: OBJECTID ':' TYPEID DARROW • expr ';'
 
-    IF          shift, and go to state 42
-    LET         shift, and go to state 43
-    WHILE       shift, and go to state 44
-    CASE        shift, and go to state 45
-    NEW         shift, and go to state 46
-    ISVOID      shift, and go to state 47
-    STR_CONST   shift, and go to state 48
-    INT_CONST   shift, and go to state 49
-    BOOL_CONST  shift, and go to state 50
-    OBJECTID    shift, and go to state 51
-    NOT         shift, and go to state 52
-    '~'         shift, and go to state 53
-    '{'         shift, and go to state 54
-    '('         shift, and go to state 55
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
 
-    expr  go to state 154
+    expr  转到状态 154
 
 
-State 153
+状态 153
 
    27 expr: expr '@' TYPEID '.' OBJECTID '(' expr_list_dispatch ')' •
 
-    $default  reduce using rule 27 (expr)
+    $default  使用规则 27 以归约 (expr)
 
 
-State 154
+状态 154
 
    23 expr: expr • '.' OBJECTID '(' expr_list_dispatch ')'
    24     | expr • '.' OBJECTID '(' ')'
@@ -2403,20 +2403,20 @@ State 154
    43     | expr • '=' expr
    57 case: OBJECTID ':' TYPEID DARROW expr • ';'
 
-    LE   shift, and go to state 74
-    '<'  shift, and go to state 75
-    '='  shift, and go to state 76
-    '+'  shift, and go to state 77
-    '-'  shift, and go to state 78
-    '*'  shift, and go to state 79
-    '/'  shift, and go to state 80
-    '@'  shift, and go to state 81
-    '.'  shift, and go to state 82
-    ';'  shift, and go to state 155
+    LE   偏移，并进入状态 74
+    '<'  偏移，并进入状态 75
+    '='  偏移，并进入状态 76
+    '+'  偏移，并进入状态 77
+    '-'  偏移，并进入状态 78
+    '*'  偏移，并进入状态 79
+    '/'  偏移，并进入状态 80
+    '@'  偏移，并进入状态 81
+    '.'  偏移，并进入状态 82
+    ';'  偏移，并进入状态 155
 
 
-State 155
+状态 155
 
    57 case: OBJECTID ':' TYPEID DARROW expr ';' •
 
-    $default  reduce using rule 57 (case)
+    $default  使用规则 57 以归约 (case)
