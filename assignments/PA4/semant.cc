@@ -1,9 +1,9 @@
 
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdarg.h>
 #include "semant.h"
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "utilities.h"
 
 extern int semant_debug;
@@ -208,6 +208,7 @@ void program_class::semant() {
     ClassTable* classtable = new ClassTable(classes);
 
     /* some semantic analysis code may go here */
+    for (int i = classes->first(); classes->more(i); i = classes->next(i)) {}
 
     if (classtable->errors()) {
         cerr << "Compilation halted due to static semantic errors." << endl;
