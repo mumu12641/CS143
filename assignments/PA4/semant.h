@@ -3,10 +3,12 @@
 
 #include <assert.h>
 #include <iostream>
+#include <list>
+#include <map>
 #include "cool-tree.h"
+#include "list.h"
 #include "stringtab.h"
 #include "symtab.h"
-#include "list.h"
 
 #define TRUE 1
 #define FALSE 0
@@ -26,11 +28,15 @@ class ClassTable {
     ostream& error_stream;
 
    public:
+    std::map<Symbol,Class_> all_classes;
     ClassTable(Classes);
     int errors() { return semant_errors; }
     ostream& semant_error();
     ostream& semant_error(Class_ c);
     ostream& semant_error(Symbol filename, tree_node* t);
+
+    void check_main(Classes classes);
+    void check_inherit(Classes classes);
 };
 
 #endif

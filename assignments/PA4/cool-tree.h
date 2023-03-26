@@ -8,8 +8,8 @@
 //
 //////////////////////////////////////////////////////////
 
-#include "tree.h"
 #include "cool-tree.handcode.h"
+#include "tree.h"
 
 // define the class for phylum
 // define simple phylum - Program
@@ -29,9 +29,16 @@ class Program_class : public tree_node {
 typedef class Class__class* Class_;
 
 class Class__class : public tree_node {
+    // Symbol name;
+    // Symbol parent;
+    // Features features;
+    // Symbol filename;
    public:
     tree_node* copy() { return copy_Class_(); }
     virtual Class_ copy_Class_() = 0;
+    virtual Symbol get_name() = 0;
+    virtual Symbol get_parent() = 0;
+    virtual Features get_features() = 0;
 
 #ifdef Class__EXTRAS
     Class__EXTRAS
@@ -45,6 +52,7 @@ class Feature_class : public tree_node {
    public:
     tree_node* copy() { return copy_Feature(); }
     virtual Feature copy_Feature() = 0;
+    virtual Symbol get_name() = 0;
 
 #ifdef Feature_EXTRAS
     Feature_EXTRAS
@@ -147,6 +155,9 @@ class class__class : public Class__class {
     }
     Class_ copy_Class_();
     void dump(ostream& stream, int n);
+    virtual Symbol get_name() { return name; }
+    virtual Symbol get_parent() { return parent; }
+    virtual Features get_features() { return features; }
 
 #ifdef Class__SHARED_EXTRAS
     Class__SHARED_EXTRAS
@@ -173,6 +184,7 @@ class method_class : public Feature_class {
     }
     Feature copy_Feature();
     void dump(ostream& stream, int n);
+    Symbol get_name() { return name; }
 
 #ifdef Feature_SHARED_EXTRAS
     Feature_SHARED_EXTRAS
@@ -197,6 +209,7 @@ class attr_class : public Feature_class {
     }
     Feature copy_Feature();
     void dump(ostream& stream, int n);
+    Symbol get_name() { return name; }
 
 #ifdef Feature_SHARED_EXTRAS
     Feature_SHARED_EXTRAS

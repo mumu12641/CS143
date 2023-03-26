@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
 #include "utilities.h"
 
 extern int semant_debug;
@@ -21,6 +22,8 @@ extern char* curr_filename;
 static Symbol arg, arg2, Bool, concat, cool_abort, copy, Int, in_int, in_string,
     IO, length, Main, main_meth, No_class, No_type, Object, out_int, out_string,
     prim_slot, self, SELF_TYPE, Str, str_field, substr, type_name, val;
+
+std::string main_str = "Main";
 //
 // Initializing the predefined symbols.
 //
@@ -58,6 +61,80 @@ static void initialize_constants(void) {
 ClassTable::ClassTable(Classes classes) : semant_errors(0), error_stream(cerr) {
     /* Fill this in */
     install_basic_classes();
+
+    // look up Main class
+    check_main(classes);
+
+    // check inhert
+    check_inherit(classes);
+}
+
+void ClassTable::check_inherit(Classes classes) {
+
+    std::map<Symbol, Class_>::iterator iter;
+    for (iter = all_classes.begin(); iter != all_classes.end(); iter++) {
+        // iter->first iter->second
+        Class_ current_class = iter->second;
+        Class_ temp = iter->second;
+        Symbol parent = current_class->get_parent();
+        while (parent->equal_string(Object->get_string(),Object->get_len()) &&
+               !parent->equal_string(current_class->get_name()->get_string(),
+                                     current_class->get_name()->get_len())) {
+            cout << "now parent is " << parent << "   now class is " << temp->get_name()
+                 << endl;
+            if (all_classes.find(parent) == all_classes.end()) {
+                semant_error(current_class)
+                    << "Error! Cannot find class " << parent << std::endl;
+                return;
+            }
+
+            // check that the parent is not Int or Bool or Str or SELF_TYPE
+            if (parent == Int || parent == Str || parent == SELF_TYPE ||
+                parent == Bool) {
+                semant_error(current_class)
+                    << "Error! Class " << current_class->get_name()
+                    << " cannot inherit from " << parent << std::endl;
+                return;
+            }
+
+            temp = all_classes[parent];
+            parent = temp->get_parent();
+            cout << "then parent is " << parent << "   then class is " << temp->get_name()
+                 << endl;
+                 cout<<endl;
+        }
+        if (parent == current_class->get_name()) {
+            semant_error(current_class)
+                << "Error! Cycle inheritance!" << std::endl;
+            return;
+        }
+    }
+}
+
+void ClassTable::check_main(Classes classes) {
+
+    for (int i = classes->first(); classes->more(i); i = classes->next(i)) {
+        // fetch all classes and check
+
+        // class name cannot be SELF_TYPE
+        if (classes->nth(i)->get_name() == SELF_TYPE) {
+            semant_error(classes->nth(i))
+                << "Error! SELF_TYPE redeclared!" << std::endl;
+        }
+
+        if (all_classes.find(classes->nth(i)->get_name()) !=
+            all_classes.end()) {
+            semant_error(classes->nth(i))
+                << "Error! Class " << classes->nth(i)->get_name()
+                << " has been defined!" << std::endl;
+            return;
+        } else {
+            all_classes.insert({classes->nth(i)->get_name(), classes->nth(i)});
+        }
+    }
+    if (all_classes.find(Main) == all_classes.end()) {
+        semant_error() << "Class Main is not defind." << endl;
+    }
 }
 
 void ClassTable::install_basic_classes() {
@@ -92,6 +169,7 @@ void ClassTable::install_basic_classes() {
                                                    Str, no_expr()))),
             single_Features(method(copy, nil_Formals(), SELF_TYPE, no_expr()))),
         filename);
+    all_classes.insert({Object, Object_class});
 
     //
     // The IO class inherits from Object. Its methods are
@@ -115,7 +193,7 @@ void ClassTable::install_basic_classes() {
                     method(in_string, nil_Formals(), Str, no_expr()))),
             single_Features(method(in_int, nil_Formals(), Int, no_expr()))),
         filename);
-
+    all_classes.insert({IO, IO_class});
     //
     // The Int class has no methods and only a single attribute, the
     // "val" for the integer.
@@ -123,14 +201,14 @@ void ClassTable::install_basic_classes() {
     Class_ Int_class =
         class_(Int, Object, single_Features(attr(val, prim_slot, no_expr())),
                filename);
-
+    all_classes.insert({Int, Int_class});
     //
     // Bool also has only the "val" slot.
     //
     Class_ Bool_class =
         class_(Bool, Object, single_Features(attr(val, prim_slot, no_expr())),
                filename);
-
+    all_classes.insert({Bool, Bool_class});
     //
     // The class Str has a number of slots and operations:
     //       val                                  the length of the string
@@ -157,6 +235,7 @@ void ClassTable::install_basic_classes() {
                                       single_Formals(formal(arg2, Int))),
                        Str, no_expr()))),
         filename);
+    all_classes.insert({Str, Str_class});
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -208,7 +287,6 @@ void program_class::semant() {
     ClassTable* classtable = new ClassTable(classes);
 
     /* some semantic analysis code may go here */
-    for (int i = classes->first(); classes->more(i); i = classes->next(i)) {}
 
     if (classtable->errors()) {
         cerr << "Compilation halted due to static semantic errors." << endl;
