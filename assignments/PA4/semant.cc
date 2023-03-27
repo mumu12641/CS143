@@ -30,215 +30,226 @@ static Symbol arg, arg2, Bool, concat, cool_abort, copy, Int, in_int, in_string,
 
 std::string main_str = "Main";
 Env *env = new Env();
+static ClassTable *classtable;
+
+static bool TESTING = true;
+static std::ostringstream nop_sstream;
+static std::ostream &log = TESTING ? std::cout : nop_sstream;
+
 //
 // Initializing the predefined symbols.
 //
 static void initialize_constants(void) {
-  arg = idtable.add_string("arg");
-  arg2 = idtable.add_string("arg2");
-  Bool = idtable.add_string("Bool");
-  concat = idtable.add_string("concat");
-  cool_abort = idtable.add_string("abort");
-  copy = idtable.add_string("copy");
-  Int = idtable.add_string("Int");
-  in_int = idtable.add_string("in_int");
-  in_string = idtable.add_string("in_string");
-  IO = idtable.add_string("IO");
-  length = idtable.add_string("length");
-  Main = idtable.add_string("Main");
-  main_meth = idtable.add_string("main");
-  //   _no_class is a symbol that can't be the name of any
-  //   user-defined class.
-  No_class = idtable.add_string("_no_class");
-  No_type = idtable.add_string("_no_type");
-  Object = idtable.add_string("Object");
-  out_int = idtable.add_string("out_int");
-  out_string = idtable.add_string("out_string");
-  prim_slot = idtable.add_string("_prim_slot");
-  self = idtable.add_string("self");
-  SELF_TYPE = idtable.add_string("SELF_TYPE");
-  Str = idtable.add_string("String");
-  str_field = idtable.add_string("_str_field");
-  substr = idtable.add_string("substr");
-  type_name = idtable.add_string("type_name");
-  val = idtable.add_string("_val");
+    arg = idtable.add_string("arg");
+    arg2 = idtable.add_string("arg2");
+    Bool = idtable.add_string("Bool");
+    concat = idtable.add_string("concat");
+    cool_abort = idtable.add_string("abort");
+    copy = idtable.add_string("copy");
+    Int = idtable.add_string("Int");
+    in_int = idtable.add_string("in_int");
+    in_string = idtable.add_string("in_string");
+    IO = idtable.add_string("IO");
+    length = idtable.add_string("length");
+    Main = idtable.add_string("Main");
+    main_meth = idtable.add_string("main");
+    //   _no_class is a symbol that can't be the name of any
+    //   user-defined class.
+    No_class = idtable.add_string("_no_class");
+    No_type = idtable.add_string("_no_type");
+    Object = idtable.add_string("Object");
+    out_int = idtable.add_string("out_int");
+    out_string = idtable.add_string("out_string");
+    prim_slot = idtable.add_string("_prim_slot");
+    self = idtable.add_string("self");
+    SELF_TYPE = idtable.add_string("SELF_TYPE");
+    Str = idtable.add_string("String");
+    str_field = idtable.add_string("_str_field");
+    substr = idtable.add_string("substr");
+    type_name = idtable.add_string("type_name");
+    val = idtable.add_string("_val");
 }
 
 ClassTable::ClassTable(Classes classes) : semant_errors(0), error_stream(cerr) {
-  /* Fill this in */
-  install_basic_classes();
+    /* Fill this in */
+    install_basic_classes();
 
-  // look up Main class
-  check_main(classes);
+    // look up Main class
+    check_main(classes);
 
-  // check inherit
-  check_inherit(classes);
+    // check inherit
+    check_inherit(classes);
 }
 
 void ClassTable::check_inherit(Classes classes) {
-  std::map<Symbol, Class_>::iterator iter;
-  for (iter = all_classes.begin(); iter != all_classes.end(); iter++) {
-    // iter->first iter->second
-    Class_ current_class = iter->second;
-    Class_ temp = iter->second;
-    Symbol parent = current_class->get_parent();
-    while (parent->equal_string(Object->get_string(), Object->get_len()) &&
-           !parent->equal_string(current_class->get_name()->get_string(),
-                                 current_class->get_name()->get_len())) {
-      if (all_classes.find(parent) == all_classes.end()) {
-        semant_error(current_class)
-            << "Error! Cannot find class " << parent << std::endl;
-        return;
-      }
+    std::map<Symbol, Class_>::iterator iter;
+    for (iter = all_classes.begin(); iter != all_classes.end(); iter++) {
+        // iter->first iter->second
+        Class_ current_class = iter->second;
+        Class_ temp = iter->second;
+        Symbol parent = current_class->get_parent();
+        while (parent->equal_string(Object->get_string(), Object->get_len()) &&
+               !parent->equal_string(current_class->get_name()->get_string(),
+                                     current_class->get_name()->get_len())) {
+            if (all_classes.find(parent) == all_classes.end()) {
+                semant_error(current_class)
+                    << "Error! Cannot find class " << parent << std::endl;
+                return;
+            }
 
-      // check that the parent is not Int or Bool or Str or SELF_TYPE
-      if (parent == Int || parent == Str || parent == SELF_TYPE ||
-          parent == Bool) {
-        semant_error(current_class)
-            << "Error! Class " << current_class->get_name()
-            << " cannot inherit from " << parent << std::endl;
-        return;
-      }
+            // check that the parent is not Int or Bool or Str or SELF_TYPE
+            if (parent == Int || parent == Str || parent == SELF_TYPE ||
+                parent == Bool) {
+                semant_error(current_class)
+                    << "Error! Class " << current_class->get_name()
+                    << " cannot inherit from " << parent << std::endl;
+                return;
+            }
 
-      temp = all_classes[parent];
-      parent = temp->get_parent();
+            temp = all_classes[parent];
+            parent = temp->get_parent();
+        }
+        if (parent == current_class->get_name()) {
+            semant_error(current_class)
+                << "Error! Cycle inheritance!" << std::endl;
+            return;
+        }
     }
-    if (parent == current_class->get_name()) {
-      semant_error(current_class) << "Error! Cycle inheritance!" << std::endl;
-      return;
-    }
-  }
 }
 
 void ClassTable::check_main(Classes classes) {
-  for (int i = classes->first(); classes->more(i); i = classes->next(i)) {
-    // fetch all classes and check
+    for (int i = classes->first(); classes->more(i); i = classes->next(i)) {
+        // fetch all classes and check
 
-    // class name cannot be SELF_TYPE
-    if (classes->nth(i)->get_name() == SELF_TYPE) {
-      semant_error(classes->nth(i))
-          << "Error! SELF_TYPE redeclared!" << std::endl;
-    }
+        // class name cannot be SELF_TYPE
+        if (classes->nth(i)->get_name() == SELF_TYPE) {
+            semant_error(classes->nth(i))
+                << "Error! SELF_TYPE redeclared!" << std::endl;
+        }
 
-    if (all_classes.find(classes->nth(i)->get_name()) != all_classes.end()) {
-      semant_error(classes->nth(i))
-          << "Error! Class " << classes->nth(i)->get_name()
-          << " has been defined!" << std::endl;
-      return;
-    } else {
-      all_classes.insert({classes->nth(i)->get_name(), classes->nth(i)});
+        if (all_classes.find(classes->nth(i)->get_name()) !=
+            all_classes.end()) {
+            semant_error(classes->nth(i))
+                << "Error! Class " << classes->nth(i)->get_name()
+                << " has been defined!" << std::endl;
+            return;
+        } else {
+            all_classes.insert({classes->nth(i)->get_name(), classes->nth(i)});
+        }
     }
-  }
-  if (all_classes.find(Main) == all_classes.end()) {
-    semant_error() << "Class Main is not defind." << endl;
-  }
+    if (all_classes.find(Main) == all_classes.end()) {
+        semant_error() << "Class Main is not defind." << endl;
+    }
 }
 
 std::list<Symbol> ClassTable::get_inherit_path(Symbol type) {
-  std::list<Symbol> path;
-  for (; type != No_class; type = all_classes[type]->get_parent()) {
-    path.push_front(type);
-  }
+    std::list<Symbol> path;
+    for (; type != No_class; type = all_classes[type]->get_parent()) {
+        path.push_front(type);
+    }
 
-  return path;
+    return path;
 }
 
 void ClassTable::install_basic_classes() {
-  // The tree package uses these globals to annotate the classes built below.
-  // curr_lineno  = 0;
-  Symbol filename = stringtable.add_string("<basic class>");
+    // The tree package uses these globals to annotate the classes built below.
+    // curr_lineno  = 0;
+    Symbol filename = stringtable.add_string("<basic class>");
 
-  // The following demonstrates how to create dummy parse trees to
-  // refer to basic Cool classes.  There's no need for method
-  // bodies -- these are already built into the runtime system.
+    // The following demonstrates how to create dummy parse trees to
+    // refer to basic Cool classes.  There's no need for method
+    // bodies -- these are already built into the runtime system.
 
-  // IMPORTANT: The results of the following expressions are
-  // stored in local variables.  You will want to do something
-  // with those variables at the end of this method to make this
-  // code meaningful.
+    // IMPORTANT: The results of the following expressions are
+    // stored in local variables.  You will want to do something
+    // with those variables at the end of this method to make this
+    // code meaningful.
 
-  //
-  // The Object class has no parent class. Its methods are
-  //        abort() : Object    aborts the program
-  //        type_name() : Str   returns a string representation of class name
-  //        copy() : SELF_TYPE  returns a copy of the object
-  //
-  // There is no need for method bodies in the basic classes---these
-  // are already built in to the runtime system.
+    //
+    // The Object class has no parent class. Its methods are
+    //        abort() : Object    aborts the program
+    //        type_name() : Str   returns a string representation of class name
+    //        copy() : SELF_TYPE  returns a copy of the object
+    //
+    // There is no need for method bodies in the basic classes---these
+    // are already built in to the runtime system.
 
-  Class_ Object_class = class_(
-      Object, No_class,
-      append_Features(
-          append_Features(single_Features(method(cool_abort, nil_Formals(),
-                                                 Object, no_expr())),
-                          single_Features(method(type_name, nil_Formals(), Str,
-                                                 no_expr()))),
-          single_Features(method(copy, nil_Formals(), SELF_TYPE, no_expr()))),
-      filename);
-  all_classes.insert({Object, Object_class});
+    Class_ Object_class = class_(
+        Object, No_class,
+        append_Features(
+            append_Features(single_Features(method(cool_abort, nil_Formals(),
+                                                   Object, no_expr())),
+                            single_Features(method(type_name, nil_Formals(),
+                                                   Str, no_expr()))),
+            single_Features(method(copy, nil_Formals(), SELF_TYPE, no_expr()))),
+        filename);
+    all_classes.insert({Object, Object_class});
 
-  //
-  // The IO class inherits from Object. Its methods are
-  //        out_string(Str) : SELF_TYPE       writes a string to the output
-  //        out_int(Int) : SELF_TYPE            "    an int    "  "     "
-  //        in_string() : Str                 reads a string from the input
-  //        in_int() : Int                      "   an int     "  "     "
-  //
-  Class_ IO_class = class_(
-      IO, Object,
-      append_Features(
-          append_Features(
-              append_Features(single_Features(method(
-                                  out_string, single_Formals(formal(arg, Str)),
-                                  SELF_TYPE, no_expr())),
-                              single_Features(method(
-                                  out_int, single_Formals(formal(arg, Int)),
-                                  SELF_TYPE, no_expr()))),
-              single_Features(
-                  method(in_string, nil_Formals(), Str, no_expr()))),
-          single_Features(method(in_int, nil_Formals(), Int, no_expr()))),
-      filename);
-  all_classes.insert({IO, IO_class});
-  //
-  // The Int class has no methods and only a single attribute, the
-  // "val" for the integer.
-  //
-  Class_ Int_class = class_(
-      Int, Object, single_Features(attr(val, prim_slot, no_expr())), filename);
-  all_classes.insert({Int, Int_class});
-  //
-  // Bool also has only the "val" slot.
-  //
-  Class_ Bool_class = class_(
-      Bool, Object, single_Features(attr(val, prim_slot, no_expr())), filename);
-  all_classes.insert({Bool, Bool_class});
-  //
-  // The class Str has a number of slots and operations:
-  //       val                                  the length of the string
-  //       str_field                            the string itself
-  //       length() : Int                       returns length of the string
-  //       concat(arg: Str) : Str               performs string concatenation
-  //       substr(arg: Int, arg2: Int): Str     substring selection
-  //
-  Class_ Str_class = class_(
-      Str, Object,
-      append_Features(
-          append_Features(
-              append_Features(
-                  append_Features(
-                      single_Features(attr(val, Int, no_expr())),
-                      single_Features(attr(str_field, prim_slot, no_expr()))),
-                  single_Features(
-                      method(length, nil_Formals(), Int, no_expr()))),
-              single_Features(method(concat, single_Formals(formal(arg, Str)),
-                                     Str, no_expr()))),
-          single_Features(
-              method(substr,
-                     append_Formals(single_Formals(formal(arg, Int)),
-                                    single_Formals(formal(arg2, Int))),
-                     Str, no_expr()))),
-      filename);
-  all_classes.insert({Str, Str_class});
+    //
+    // The IO class inherits from Object. Its methods are
+    //        out_string(Str) : SELF_TYPE       writes a string to the output
+    //        out_int(Int) : SELF_TYPE            "    an int    "  "     "
+    //        in_string() : Str                 reads a string from the input
+    //        in_int() : Int                      "   an int     "  "     "
+    //
+    Class_ IO_class = class_(
+        IO, Object,
+        append_Features(
+            append_Features(
+                append_Features(
+                    single_Features(method(out_string,
+                                           single_Formals(formal(arg, Str)),
+                                           SELF_TYPE, no_expr())),
+                    single_Features(method(out_int,
+                                           single_Formals(formal(arg, Int)),
+                                           SELF_TYPE, no_expr()))),
+                single_Features(
+                    method(in_string, nil_Formals(), Str, no_expr()))),
+            single_Features(method(in_int, nil_Formals(), Int, no_expr()))),
+        filename);
+    all_classes.insert({IO, IO_class});
+    //
+    // The Int class has no methods and only a single attribute, the
+    // "val" for the integer.
+    //
+    Class_ Int_class =
+        class_(Int, Object, single_Features(attr(val, prim_slot, no_expr())),
+               filename);
+    all_classes.insert({Int, Int_class});
+    //
+    // Bool also has only the "val" slot.
+    //
+    Class_ Bool_class =
+        class_(Bool, Object, single_Features(attr(val, prim_slot, no_expr())),
+               filename);
+    all_classes.insert({Bool, Bool_class});
+    //
+    // The class Str has a number of slots and operations:
+    //       val                                  the length of the string
+    //       str_field                            the string itself
+    //       length() : Int                       returns length of the string
+    //       concat(arg: Str) : Str               performs string concatenation
+    //       substr(arg: Int, arg2: Int): Str     substring selection
+    //
+    Class_ Str_class = class_(
+        Str, Object,
+        append_Features(
+            append_Features(
+                append_Features(
+                    append_Features(
+                        single_Features(attr(val, Int, no_expr())),
+                        single_Features(attr(str_field, prim_slot, no_expr()))),
+                    single_Features(
+                        method(length, nil_Formals(), Int, no_expr()))),
+                single_Features(method(concat, single_Formals(formal(arg, Str)),
+                                       Str, no_expr()))),
+            single_Features(
+                method(substr,
+                       append_Formals(single_Formals(formal(arg, Int)),
+                                      single_Formals(formal(arg2, Int))),
+                       Str, no_expr()))),
+        filename);
+    all_classes.insert({Str, Str_class});
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -257,25 +268,47 @@ void ClassTable::install_basic_classes() {
 ///////////////////////////////////////////////////////////////////
 
 ostream &ClassTable::semant_error(Class_ c) {
-  return semant_error(c->get_filename(), c);
+    return semant_error(c->get_filename(), c);
 }
 
 ostream &ClassTable::semant_error(Symbol filename, tree_node *t) {
-  error_stream << filename << ":" << t->get_line_number() << ": ";
-  return semant_error();
+    error_stream << filename << ":" << t->get_line_number() << ": ";
+    return semant_error();
 }
 
 ostream &ClassTable::semant_error() {
-  semant_errors++;
-  return error_stream;
+    semant_errors++;
+    return error_stream;
 }
 
 void method_class::add_method_to_table(Class_ class_) {
-  env->M[class_]->addid(name, this);
+    env->M[class_]->addid(name, this);
 }
-void method_class::add_attr_to_table() {}
+
+void method_class::add_attr_to_table(Class_ class_) {}
+
+void method_class::check_feature_type(){
+
+}
+
 void attr_class::add_method_to_table(Class_ class_) {}
-void attr_class::add_attr_to_table() {}
+
+void attr_class::add_attr_to_table(Class_ class_) {
+    if (env->O->lookup(name) != NULL) {
+        classtable->semant_error(class_)
+            << "Error! attribute '" << name << "' already exists!" << endl;
+    }
+    if (name == self) {
+        classtable->semant_error(class_)
+            << "Error! 'self' cannot be the name of an attribute in class "
+            << class_->get_name() << endl;
+    }
+    env->O->addid(name, &type_decl);
+}
+
+void attr_class::check_feature_type(){
+    
+}
 
 /*   This is the entry point to the semantic checker.
 
@@ -291,110 +324,154 @@ void attr_class::add_attr_to_table() {}
      to build mycoolc.
  */
 void program_class::semant() {
-  initialize_constants();
+    initialize_constants();
 
-  /* ClassTable constructor may do some semantic analysis */
-  ClassTable *classtable = new ClassTable(classes);
+    /* ClassTable constructor may do some semantic analysis */
+    classtable = new ClassTable(classes);
 
-  /* some semantic analysis code may go here */
+    /* some semantic analysis code may go here */
 
-  // Type check
-  // C = current class
-  // O is empty and M is empty
-  // get feature: method and attr
+    // Type check
+    // C = current class
+    // O is empty and M is empty
+    // get feature: method and attr
 
-  /*
-      // Pass through every method in every class,
-      // construct the methodtables.(M)
-          methodtables.entersocpe();
-          methodtables.add() and add from parent, but check overriding
+    /*
+        // Pass through every method in every class,
+        // construct the methodtables.(M)
+            methodtables.entersocpe();
+            methodtables.add() and add from parent, but check overriding
 
-      // attritable (O)
-          attritable.enterscope();
-          attritable.add() and add from parent, but check
-      // then find illegal method overriding.
+        // attritable (O)
+            attritable.enterscope();
+            attritable.add() and add from parent, but check
+        // then find illegal method overriding.
 
-      // then check all type
-          check method
+        // then check all type
+            check method
 
-      // check a class, then table.exitscope();
-//     */
+        // check a class, then table.exitscope();
+  //     */
 
-  // first pass--construct methodtables
-  for (std::map<Symbol, Class_>::iterator iter =
-           classtable->all_classes.begin();
-       iter != classtable->all_classes.end(); iter++) {
-    Class_ curr_class = iter->second;
-    Features curr_features = curr_class->get_features();
+    // first pass--construct methodtables
+    for (std::map<Symbol, Class_>::iterator iter =
+             classtable->all_classes.begin();
+         iter != classtable->all_classes.end(); iter++) {
+        Class_ curr_class = iter->second;
+        Features curr_features = curr_class->get_features();
 
-    env->C = curr_class;
-    env->O->enterscope();
-    env->M[curr_class] = new SymbolTable<Symbol, method_class>();
-    env->M[curr_class]->enterscope();
+        env->M[curr_class] = new SymbolTable<Symbol, method_class>();
+        env->M[curr_class]->enterscope();
 
-    for (int i = curr_features->first(); curr_features->more(i);
-         i = curr_features->next(i)) {
-      Feature curr_feature = curr_features->nth(i);
+        for (int i = curr_features->first(); curr_features->more(i);
+             i = curr_features->next(i)) {
+            Feature curr_feature = curr_features->nth(i);
 
-      if (curr_feature->is_method()) {
-        curr_feature->add_method_to_table(curr_class);
-      }
-      if (curr_feature->is_attr()) {
-      }
+            if (curr_feature->is_method()) {
+                curr_feature->add_method_to_table(curr_class);
+            }
+            if (curr_feature->is_attr()) {
+            }
+        }
     }
-  }
 
-  // second pass -- check overriding
-  for (std::map<Symbol, Class_>::iterator iter =
-           classtable->all_classes.begin();
-       iter != classtable->all_classes.end(); iter++) {
-    Class_ curr_class = iter->second;
-    Features curr_features = curr_class->get_features();
-    for (int i = curr_features->first(); curr_features->more(i);
-         i = curr_features->next(i)) {
-      Feature curr_feature = curr_features->nth(i);
-      Formals curr_formals = curr_feature->get_formals();
+    // second pass -- check overriding
+    for (std::map<Symbol, Class_>::iterator iter =
+             classtable->all_classes.begin();
+         iter != classtable->all_classes.end(); iter++) {
+        Class_ curr_class = iter->second;
+        Features curr_features = curr_class->get_features();
 
-      if (curr_feature->is_method()) {
+        for (int i = curr_features->first(); curr_features->more(i);
+             i = curr_features->next(i)) {
+            Feature curr_feature = curr_features->nth(i);
+            Formals curr_formals = curr_feature->get_formals();
+
+            if (curr_feature->is_method()) {
+                std::list<Symbol> path =
+                    classtable->get_inherit_path(curr_class->get_name());
+
+                for (std::list<Symbol>::reverse_iterator iter = path.rbegin();
+                     iter != path.rend(); ++iter) {
+                    Symbol curr_parent = *iter;
+
+                    method_class *parent_method =
+                        env->M[classtable->all_classes[curr_parent]]->lookup(
+                            curr_feature->get_name());
+                    if (parent_method != NULL) {
+                        // if found parent function , now check overriding
+                        Formals parent_formals = parent_method->get_formals();
+
+                        for (int i = parent_formals->first(),
+                                 j = curr_formals->first();
+                             parent_formals->more(i) && curr_formals->more(j);
+                             i = parent_formals->next(i),
+                                 j = curr_formals->next(j)) {
+                            if (parent_formals->nth(i)->get_type() !=
+                                curr_formals->nth(j)->get_type()) {
+                                classtable->semant_error(
+                                    classtable
+                                        ->all_classes[curr_class->get_name()])
+                                    << "Method override error: formal type not "
+                                       "match."
+                                    << endl;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /*
+      get all attribute
+    */
+    // first get attribute from parent
+    // for program's classes not all classes
+    for (int i = classes->first(); classes->more(i); i = classes->next(i)) {
+        Class_ curr_class = classes->nth(i);
+        log << "check attribute, now class is " << curr_class->get_name()
+              << endl;
         std::list<Symbol> path =
             classtable->get_inherit_path(curr_class->get_name());
+        env->C = curr_class;
 
-        for (std::list<Symbol>::reverse_iterator iter = path.rbegin();
-             iter != path.rend(); ++iter) {
-          Symbol curr_parent = *iter;
+        for (std::list<Symbol>::iterator iter = path.begin();
+             iter != path.end(); ++iter) {
+            env->O->enterscope();
+            curr_class = classtable->all_classes[*iter];
+            log << "inherit now class is " << curr_class->get_name() << endl;
+            Features curr_features = curr_class->get_features();
 
-          method_class *parent_method =
-              env->M[classtable->all_classes[curr_parent]]->lookup(
-                  curr_feature->get_name());
-          if (parent_method != NULL) {
-            // if found parent function , now check overriding
-            Formals parent_formals = parent_method->get_formals();
-
-            for (int i = parent_formals->first(), j = curr_formals->first();
-                 parent_formals->more(i) && curr_formals->more(j);
-                 i = parent_formals->next(i), j = curr_formals->next(j)) {
-              if (parent_formals->nth(i)->get_type() !=
-                  curr_formals->nth(j)->get_type()) {
-                classtable->semant_error(
-                    classtable->all_classes[curr_class->get_name()])
-                    << "Method override error: formal type not "
-                       "match."
-                    << endl;
-              }
+            for (int j = curr_features->first(); curr_features->more(j);
+                 j = curr_features->next(j)) {
+                Feature curr_feature = curr_features->nth(j);
+                curr_feature->add_attr_to_table(curr_class);
+                log << "feature:" << curr_feature->get_name() << endl;
             }
-          }
+            log << endl;
         }
-      }
+
+        curr_class = classes->nth(i);
+
+        env->O->enterscope();
+        Features curr_features = curr_class->get_features();
+        for (int j = curr_features->first(); curr_features->more(j);
+             j = curr_features->next(j)) {
+            Feature curr_feature = curr_features->nth(j);
+            // curr_feature->add_attr_to_table(curr_class, classtable);
+            curr_feature->check_feature_type();
+        }
+
+        for (int j = 0; j < path.size(); ++j) {
+            env->O->exitscope();
+        }
     }
-  }
 
-  /*
-    get all attribute
-  */
-  //
-
-  if (classtable->errors()) {
-    cerr << "Compilation halted due to static semantic errors." << endl;
     exit(1);
-  }
+
+    if (classtable->errors()) {
+        cerr << "Compilation halted due to static semantic errors." << endl;
+        exit(1);
+    }
 }

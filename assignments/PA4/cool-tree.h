@@ -57,7 +57,8 @@ class Feature_class : public tree_node {
     virtual bool is_method() = 0;
     virtual bool is_attr() = 0;
     virtual void add_method_to_table(Class_ class_) = 0;
-    virtual void add_attr_to_table() = 0;
+    virtual void add_attr_to_table(Class_ class_) = 0;
+    virtual void check_feature_type() = 0;
 
 #ifdef Feature_EXTRAS
     Feature_EXTRAS
@@ -191,11 +192,12 @@ class method_class : public Feature_class {
     Feature copy_Feature();
     void dump(ostream& stream, int n);
     void add_method_to_table(Class_ class_);
-    void add_attr_to_table();
+    void add_attr_to_table(Class_ class_);
     Symbol get_name() { return name; }
     Formals get_formals() { return formals; }
     bool is_method() { return true; }
     bool is_attr() { return false; }
+    void check_feature_type();
 
 #ifdef Feature_SHARED_EXTRAS
     Feature_SHARED_EXTRAS
@@ -221,11 +223,12 @@ class attr_class : public Feature_class {
     Feature copy_Feature();
     void dump(ostream& stream, int n);
     void add_method_to_table(Class_ class_);
-    void add_attr_to_table();
+    void add_attr_to_table(Class_ class_);
     Symbol get_name() { return name; }
     Formals get_formals() { return NULL; }
     bool is_method() { return false; }
     bool is_attr() { return true; }
+    void check_feature_type();
 
 #ifdef Feature_SHARED_EXTRAS
     Feature_SHARED_EXTRAS
