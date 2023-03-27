@@ -1,3 +1,4 @@
+
 class C inherits A{
 	a : Int;
 	b : Bool;
@@ -9,12 +10,24 @@ class C inherits A{
 
            }
 	};
+	test(x:Int,y:Bool):A{
+		{
+			a();
+		}
+	};
+
 };
 
 class A inherits IO{
 	a():A{{
-		self
+		self;
 	}
+	};
+
+	test(x:Int,y:Bool):A{
+		{
+			self;
+		}
 	};
 };
 

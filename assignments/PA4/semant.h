@@ -21,21 +21,18 @@ typedef ClassTable* ClassTableP;
 // you like: it is only here to provide a container for the supplied
 // methods.
 
+typedef SymbolTable<Symbol, method_class>* MethodTable;
+
 class Env {
    private:
-   
-
    public:
     Class_ C;
-    SymbolTable<Symbol, Symbol> *O;
-    SymbolTable<Symbol, method_class> *M;
-    Env() {
-      O = new SymbolTable<Symbol, Symbol>();
-      M = new SymbolTable<Symbol, method_class>();
-      C = NULL;
-   }
-
-
+    SymbolTable<Symbol, Symbol>* O;
+    std::map<Class_, MethodTable> M;
+   Env() {
+        O = new SymbolTable<Symbol, Symbol>();
+        C = NULL;
+    }
 };
 
 class ClassTable {
@@ -54,6 +51,7 @@ class ClassTable {
 
     void check_main(Classes classes);
     void check_inherit(Classes classes);
+    std::list<Symbol> get_inherit_path(Symbol type);
 };
 
 #endif
