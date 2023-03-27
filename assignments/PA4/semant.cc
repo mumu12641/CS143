@@ -10,6 +10,8 @@
 extern int semant_debug;
 extern char* curr_filename;
 
+// SymbolTable<Symbol, Class_>
+
 //////////////////////////////////////////////////////////////////////
 //
 // Symbols
@@ -65,23 +67,20 @@ ClassTable::ClassTable(Classes classes) : semant_errors(0), error_stream(cerr) {
     // look up Main class
     check_main(classes);
 
-    // check inhert
+    // check inherit
     check_inherit(classes);
 }
 
 void ClassTable::check_inherit(Classes classes) {
-
     std::map<Symbol, Class_>::iterator iter;
     for (iter = all_classes.begin(); iter != all_classes.end(); iter++) {
         // iter->first iter->second
         Class_ current_class = iter->second;
         Class_ temp = iter->second;
         Symbol parent = current_class->get_parent();
-        while (parent->equal_string(Object->get_string(),Object->get_len()) &&
+        while (parent->equal_string(Object->get_string(), Object->get_len()) &&
                !parent->equal_string(current_class->get_name()->get_string(),
                                      current_class->get_name()->get_len())) {
-            cout << "now parent is " << parent << "   now class is " << temp->get_name()
-                 << endl;
             if (all_classes.find(parent) == all_classes.end()) {
                 semant_error(current_class)
                     << "Error! Cannot find class " << parent << std::endl;
@@ -99,9 +98,6 @@ void ClassTable::check_inherit(Classes classes) {
 
             temp = all_classes[parent];
             parent = temp->get_parent();
-            cout << "then parent is " << parent << "   then class is " << temp->get_name()
-                 << endl;
-                 cout<<endl;
         }
         if (parent == current_class->get_name()) {
             semant_error(current_class)
@@ -112,7 +108,6 @@ void ClassTable::check_inherit(Classes classes) {
 }
 
 void ClassTable::check_main(Classes classes) {
-
     for (int i = classes->first(); classes->more(i); i = classes->next(i)) {
         // fetch all classes and check
 
@@ -287,6 +282,48 @@ void program_class::semant() {
     ClassTable* classtable = new ClassTable(classes);
 
     /* some semantic analysis code may go here */
+    Env* env = new Env();
+
+    // Type check
+    // C = current class
+    // O is empty and M is empty
+    // get feature: method and attr
+    std::map<Symbol, Class_>::iterator iter;
+    for (iter = classtable->all_classes.begin();
+         iter != classtable->all_classes.end(); iter++) {
+        Class_ curr_class = iter->second;
+        Features curr_features = curr_class->get_features();
+
+        env->C = curr_class;
+        env->M->enterscope();
+        env->O->enterscope();
+
+        for (int i = curr_features->first(); curr_features->more(i);
+             i = curr_features->next(i)) {
+            Feature curr_feature = curr_features->nth(i);
+
+            // classtable->semant_error() << curr_feature->get_name() << endl;
+        }
+
+
+        /*
+        // Pass through every method in every class, 
+        // construct the methodtables.(M) 
+            methodtables.entersocpe();
+            methodtables.add() and add from parent, but check overriding
+
+
+        // attritable (O)
+            attritable.enterscope();
+            attritable.add() and add from parent, but check
+        // then find illegal method overriding.
+
+        // then check all type
+            check method 
+
+        // check a class, then table.exitscope();
+        */
+    }
 
     if (classtable->errors()) {
         cerr << "Compilation halted due to static semantic errors." << endl;

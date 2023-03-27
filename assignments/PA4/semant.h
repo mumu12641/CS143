@@ -21,6 +21,23 @@ typedef ClassTable* ClassTableP;
 // you like: it is only here to provide a container for the supplied
 // methods.
 
+class Env {
+   private:
+   
+
+   public:
+    Class_ C;
+    SymbolTable<Symbol, Symbol> *O;
+    SymbolTable<Symbol, method_class> *M;
+    Env() {
+      O = new SymbolTable<Symbol, Symbol>();
+      M = new SymbolTable<Symbol, method_class>();
+      C = NULL;
+   }
+
+
+};
+
 class ClassTable {
    private:
     int semant_errors;
@@ -28,7 +45,7 @@ class ClassTable {
     ostream& error_stream;
 
    public:
-    std::map<Symbol,Class_> all_classes;
+    std::map<Symbol, Class_> all_classes;
     ClassTable(Classes);
     int errors() { return semant_errors; }
     ostream& semant_error();
