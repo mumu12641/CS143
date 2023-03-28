@@ -51,7 +51,11 @@ class ClassTable {
 
     void check_main(Classes classes);
     void check_inherit(Classes classes);
+    bool check_less_or_equal(Symbol T0, Symbol T1);
     std::list<Symbol> get_inherit_path(Symbol type);
+    bool is_class_exist(Symbol class_){
+        return all_classes.find(class_) != all_classes.end();
+    }
 };
 
 #endif

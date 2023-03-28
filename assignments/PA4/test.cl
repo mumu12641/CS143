@@ -1,13 +1,13 @@
 
 class C inherits A{
-	a : Int;
+	a : Int <- 0;
 	b : Bool;
+	-- c : Bool; 
 	init(x : Int, y : Bool) : A {
            {
 		a <- x;
 		b <- y;
 		a();
-
            }
 	};
 	test(x:Int,y:Bool):A{
@@ -19,6 +19,7 @@ class C inherits A{
 };
 
 class A inherits IO{
+	-- a:Int;
 	a():A{{
 		self;
 	}

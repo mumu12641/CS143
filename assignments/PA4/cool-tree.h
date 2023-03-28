@@ -73,6 +73,7 @@ class Formal_class : public tree_node {
     tree_node* copy() { return copy_Formal(); }
     virtual Formal copy_Formal() = 0;
     virtual Symbol get_type() = 0;
+    virtual Symbol get_name() = 0;
 
 #ifdef Formal_EXTRAS
     Formal_EXTRAS
@@ -86,6 +87,7 @@ class Expression_class : public tree_node {
    public:
     tree_node* copy() { return copy_Expression(); }
     virtual Expression copy_Expression() = 0;
+    virtual Symbol check_expr_type() = 0;
 
 #ifdef Expression_EXTRAS
     Expression_EXTRAS
@@ -252,6 +254,7 @@ class formal_class : public Formal_class {
     Formal copy_Formal();
     void dump(ostream& stream, int n);
     Symbol get_type() { return type_decl; }
+    Symbol get_name() {return name;}
 
 #ifdef Formal_SHARED_EXTRAS
     Formal_SHARED_EXTRAS
@@ -298,6 +301,7 @@ class assign_class : public Expression_class {
     }
     Expression copy_Expression();
     void dump(ostream& stream, int n);
+    Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
     Expression_SHARED_EXTRAS
@@ -324,6 +328,7 @@ class static_dispatch_class : public Expression_class {
     }
     Expression copy_Expression();
     void dump(ostream& stream, int n);
+    Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
     Expression_SHARED_EXTRAS
@@ -348,6 +353,7 @@ class dispatch_class : public Expression_class {
     }
     Expression copy_Expression();
     void dump(ostream& stream, int n);
+    Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
     Expression_SHARED_EXTRAS
@@ -372,6 +378,7 @@ class cond_class : public Expression_class {
     }
     Expression copy_Expression();
     void dump(ostream& stream, int n);
+    Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
     Expression_SHARED_EXTRAS
@@ -394,6 +401,7 @@ class loop_class : public Expression_class {
     }
     Expression copy_Expression();
     void dump(ostream& stream, int n);
+    Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
     Expression_SHARED_EXTRAS
@@ -416,6 +424,7 @@ class typcase_class : public Expression_class {
     }
     Expression copy_Expression();
     void dump(ostream& stream, int n);
+    Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
     Expression_SHARED_EXTRAS
@@ -434,6 +443,7 @@ class block_class : public Expression_class {
     block_class(Expressions a1) { body = a1; }
     Expression copy_Expression();
     void dump(ostream& stream, int n);
+    Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
     Expression_SHARED_EXTRAS
@@ -460,6 +470,7 @@ class let_class : public Expression_class {
     }
     Expression copy_Expression();
     void dump(ostream& stream, int n);
+    Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
     Expression_SHARED_EXTRAS
@@ -482,6 +493,7 @@ class plus_class : public Expression_class {
     }
     Expression copy_Expression();
     void dump(ostream& stream, int n);
+    Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
     Expression_SHARED_EXTRAS
@@ -504,6 +516,7 @@ class sub_class : public Expression_class {
     }
     Expression copy_Expression();
     void dump(ostream& stream, int n);
+    Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
     Expression_SHARED_EXTRAS
@@ -526,6 +539,7 @@ class mul_class : public Expression_class {
     }
     Expression copy_Expression();
     void dump(ostream& stream, int n);
+    Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
     Expression_SHARED_EXTRAS
@@ -548,6 +562,7 @@ class divide_class : public Expression_class {
     }
     Expression copy_Expression();
     void dump(ostream& stream, int n);
+    Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
     Expression_SHARED_EXTRAS
@@ -566,6 +581,7 @@ class neg_class : public Expression_class {
     neg_class(Expression a1) { e1 = a1; }
     Expression copy_Expression();
     void dump(ostream& stream, int n);
+    Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
     Expression_SHARED_EXTRAS
@@ -588,6 +604,7 @@ class lt_class : public Expression_class {
     }
     Expression copy_Expression();
     void dump(ostream& stream, int n);
+    Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
     Expression_SHARED_EXTRAS
@@ -610,6 +627,7 @@ class eq_class : public Expression_class {
     }
     Expression copy_Expression();
     void dump(ostream& stream, int n);
+    Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
     Expression_SHARED_EXTRAS
@@ -632,6 +650,7 @@ class leq_class : public Expression_class {
     }
     Expression copy_Expression();
     void dump(ostream& stream, int n);
+    Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
     Expression_SHARED_EXTRAS
@@ -650,6 +669,7 @@ class comp_class : public Expression_class {
     comp_class(Expression a1) { e1 = a1; }
     Expression copy_Expression();
     void dump(ostream& stream, int n);
+    Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
     Expression_SHARED_EXTRAS
@@ -668,6 +688,7 @@ class int_const_class : public Expression_class {
     int_const_class(Symbol a1) { token = a1; }
     Expression copy_Expression();
     void dump(ostream& stream, int n);
+    Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
     Expression_SHARED_EXTRAS
@@ -686,6 +707,7 @@ class bool_const_class : public Expression_class {
     bool_const_class(Boolean a1) { val = a1; }
     Expression copy_Expression();
     void dump(ostream& stream, int n);
+    Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
     Expression_SHARED_EXTRAS
@@ -704,6 +726,7 @@ class string_const_class : public Expression_class {
     string_const_class(Symbol a1) { token = a1; }
     Expression copy_Expression();
     void dump(ostream& stream, int n);
+    Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
     Expression_SHARED_EXTRAS
@@ -722,6 +745,7 @@ class new__class : public Expression_class {
     new__class(Symbol a1) { type_name = a1; }
     Expression copy_Expression();
     void dump(ostream& stream, int n);
+    Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
     Expression_SHARED_EXTRAS
@@ -740,6 +764,7 @@ class isvoid_class : public Expression_class {
     isvoid_class(Expression a1) { e1 = a1; }
     Expression copy_Expression();
     void dump(ostream& stream, int n);
+    Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
     Expression_SHARED_EXTRAS
@@ -756,6 +781,7 @@ class no_expr_class : public Expression_class {
     no_expr_class() {}
     Expression copy_Expression();
     void dump(ostream& stream, int n);
+    Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
     Expression_SHARED_EXTRAS
@@ -774,6 +800,7 @@ class object_class : public Expression_class {
     object_class(Symbol a1) { name = a1; }
     Expression copy_Expression();
     void dump(ostream& stream, int n);
+    Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
     Expression_SHARED_EXTRAS
