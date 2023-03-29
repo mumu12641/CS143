@@ -1,35 +1,34 @@
-
 class C inherits A{
 	a : Int <- 0;
 	b : Bool;
 	-- c : Bool; 
-	init(x : Int, y : Bool) : A {
+	init(x : Int, y : Bool) : SELF_TYPE {
            {
 		a <- x;
 		b <- y;
-		a();
+		a(x);
            }
 	};
-	test(x:Int,y:Bool):A{
-		{
-			a();
-		}
-	};
+	-- test(x:Int,y:Bool):A{
+	-- 	{
+	-- 		a(x);
+	-- 	}
+	-- };
 
 };
 
 class A inherits IO{
 	-- a:Int;
-	a():A{{
+	a(x:Int):SELF_TYPE{{
 		self;
 	}
 	};
 
-	test(x:Int,y:Bool):A{
-		{
-			self;
-		}
-	};
+	-- test(x:Int,y:Bool):A{
+	-- 	{
+	-- 		self;
+	-- 	}
+	-- };
 };
 
 Class Main  {

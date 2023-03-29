@@ -32,9 +32,7 @@ std::string main_str = "Main";
 Env* env = new Env();
 static ClassTable* classtable;
 
-static bool TESTING = true;
-static std::ostringstream nop_sstream;
-static std::ostream& log = TESTING ? std::cout : nop_sstream;
+static std::ostream& log = std::cout;
 
 //
 // Initializing the predefined symbols.
@@ -140,6 +138,36 @@ void ClassTable::check_main(Classes classes) {
 }
 
 // if T0 <= T1 in inherit path return true; Attention SELF_TYPE
+// note on SELF_TYPE
+// (from  https://github.com/skyzluo/CS143-Compilers-Stanford/blob/HEAD/PA4/semant.cc#L190-L217):
+//     When some object o in class C is of SELF_TYPE,
+//     it means the real(dynamic) type of o might be C,
+//     or any subclass of C, depending on the dynamic type of the containing object.
+//     Then, how do we check the inheritance in case of SELF_TYPE?
+//
+//     1. ancestor = child = SELF_TYPE
+//        In this case, we know that the 2 objects have the same dynamic type.
+//
+//     2. ancestor = A, child = SELF_TYPE
+//        In this case, we don't know what the dynamic type of child.
+//        So we just assume child is C.
+//        If we know that C <= A, then even child's dynamic type isn't C,
+//        it can only be a subclass of C. so we are still safe.
+//
+//        However, this makes the type checker more strict than the real world.
+//        Consider this scenario:
+//        A < C, and child's dynamic type is A (but the type check can't know this!)
+//        then the type checker will complain, even though the program should work.
+//
+//     3. ancestor = SELF_TYPE, child = A
+//        In this case, we have to say that it doesn't type check in any case.
+//        Even if A <= C, ancestor's dynamic type could be a subclass of C,
+//        which might not be an ancestor of A.
+//
+//     To sum up, the type checker is more strict than the real world: it might reject
+//     some valid programs, but it will not tolerate any invalid program.
+//                                          child    ancestor
+//                                           ||         ||
 bool ClassTable::check_less_or_equal(Symbol T0, Symbol T1) {
     if (T1 == SELF_TYPE) {
         return T0 == SELF_TYPE;
@@ -296,6 +324,9 @@ ostream& ClassTable::semant_error() {
 }
 
 void method_class::add_method_to_table(Class_ class_) {
+    // env->M[class_]->addid(
+    //     name, new method_class(copy_Symbol(name), formals->copy_list(),
+    //                            copy_Symbol(return_type), expr->copy_Expression()));
     env->M[class_]->addid(name, this);
 }
 
@@ -324,6 +355,7 @@ void method_class::check_feature_type() {
 
     Symbol type = expr->check_expr_type();
     // return_type =  SELF_TYPE , thenm type <SELF_TYPEc
+    log << "check less or equal " << type << "    " << return_type << endl;
     if (!classtable->check_less_or_equal(type, return_type)) {
         classtable->semant_error(env->C)
             << "Error! return type is not ancestor of expr type. " << endl;
@@ -349,15 +381,37 @@ void attr_class::add_attr_to_table(Class_ class_) {
 void attr_class::check_feature_type() {
     Symbol type = init->check_expr_type();
     if (type == No_type) {
-        log << "attr_class no init" << endl;
     } else if (classtable->check_less_or_equal(type, type_decl)) {
-        log << "attr_class type check yes" << endl;
+    } else {
+        classtable->semant_error(env->C) << "Inferred type" << type
+                                         << " of initialization of attribute a "
+                                            "does not conform to declared type "
+                                         << type_decl << endl;
     }
 }
 
 Symbol assign_class::check_expr_type() {
-    log << "assign class" << endl;
-    return NULL;
+
+    Symbol expr_type = expr->check_expr_type();
+    Symbol* type_p = env->O->lookup(name);
+    log << "assign class " << name << ":" << *type_p << "<-" << expr_type
+        << endl;
+    if (type_p == NULL) {
+        classtable->semant_error(env->C)
+            << "Assignment to undeclared variable " << name << endl;
+        set_type(Object);
+        return type;
+    }
+    if (!classtable->check_less_or_equal(expr_type, *type_p)) {
+        classtable->semant_error(env->C)
+            << "Type " << expr_type
+            << " of assigned expression does not conform to declared type "
+            << *type_p << " of identifier " << name << endl;
+        set_type(Object);
+        return type;
+    }
+    set_type(*type_p);
+    return type;
 }
 
 Symbol static_dispatch_class::check_expr_type() {
@@ -365,8 +419,71 @@ Symbol static_dispatch_class::check_expr_type() {
 }
 
 Symbol dispatch_class::check_expr_type() {
-    log << "dispatch class" << endl;
-    return NULL;
+    log << "dispatch class  " << name << "()" << endl;
+    // expr; name; actual;
+
+    Symbol expr_type = expr->check_expr_type();
+    std::list<Symbol> path;
+    if (expr_type == SELF_TYPE) {
+        // expr_type = env->C->get_name();
+        path = classtable->get_inherit_path(env->C->get_name());
+    } else {
+        path = classtable->get_inherit_path(expr_type);
+    }
+
+    method_class* curr_method = NULL;
+    for (std::list<Symbol>::reverse_iterator iter = path.rbegin();
+         iter != path.rend(); ++iter) {
+        Symbol curr_class = *iter;
+        SymbolTable<Symbol, method_class>* method_table =
+            env->M[classtable->all_classes[curr_class]];
+        curr_method = method_table->lookup(name);
+        if (curr_method != NULL) {
+            break;
+        }
+    }
+    if (curr_method == NULL) {
+        classtable->semant_error(env->C)
+            << "Dispatch to undefind method " << name << endl;
+        set_type(Object);
+        return type;
+    }
+
+    // check method's attribute
+    Formals curr_formals = curr_method->get_formals();
+    if (actual->len() != curr_formals->len()) {
+        classtable->semant_error(env->C)
+            << "Method " << name << " called with wrong number of arguments."
+            << endl;
+        set_type(Object);
+        return type;
+    }
+    for (int i = curr_formals->first(), j = actual->first();
+         curr_formals->more(i) && actual->more(j);
+         i = curr_formals->next(i), j = actual->next(j)) {
+        Formal curr_formal = curr_formals->nth(i);
+        Expression curr_actual = actual->nth(j);
+        Symbol curr_type = curr_actual->check_expr_type();
+
+        if (!classtable->check_less_or_equal(curr_type,
+                                             curr_formal->get_type())) {
+            classtable->semant_error(env->C)
+                << "In call of method " << name << ", type " << curr_type
+                << " of parameter " << curr_formal->get_name()
+                << " does not conform to declared type "
+                << curr_formal->get_type() << endl;
+            set_type(Object);
+            return type;
+        }
+    }
+
+    if (curr_method->get_return_type() == SELF_TYPE) {
+        set_type(expr_type);
+    } else {
+        set_type(curr_method->get_return_type());
+    }
+
+    return type;
 }
 
 Symbol cond_class::check_expr_type() {
@@ -382,6 +499,7 @@ Symbol typcase_class::check_expr_type() {
 }
 
 Symbol block_class::check_expr_type() {
+    log << "block class {}" << endl;
     Symbol type;
     for (int i = body->first(); body->more(i); i = body->next(i)) {
         type = body->nth(i)->check_expr_type();
@@ -446,7 +564,14 @@ Symbol string_const_class::check_expr_type() {
 }
 
 Symbol new__class::check_expr_type() {
-    return NULL;
+    log << "new class" << endl;
+    // type_name
+    if (type_name == SELF_TYPE) {
+        set_type(self);
+    } else {
+        set_type(type_name);
+    }
+    return type;
 }
 
 Symbol isvoid_class::check_expr_type() {
@@ -459,7 +584,15 @@ Symbol no_expr_class::check_expr_type() {
 }
 
 Symbol object_class::check_expr_type() {
-    return NULL;
+    Symbol* type_p = env->O->lookup(name);
+    if (type_p == NULL) {
+        classtable->semant_error(env->C)
+            << "Undeclared idntifier " << name << endl;
+        set_type(Object);
+        return type;
+    }
+    set_type(*type_p);
+    return type;
 }
 
 /*   This is the entry point to the semantic checker.
@@ -524,7 +657,7 @@ void program_class::semant() {
                 for (std::list<Symbol>::reverse_iterator iter = path.rbegin();
                      iter != path.rend(); ++iter) {
                     Symbol curr_parent = *iter;
-
+                    // C <- A <- IO <- Object
                     method_class* parent_method =
                         env->M[classtable->all_classes[curr_parent]]->lookup(
                             curr_feature->get_name());
@@ -581,21 +714,22 @@ void program_class::semant() {
         curr_class = classes->nth(i);
 
         env->O->enterscope();
+        // Symbol s = env->C->get_name();
+        env->O->addid(self, &SELF_TYPE);
         Features curr_features = curr_class->get_features();
         for (int j = curr_features->first(); curr_features->more(j);
              j = curr_features->next(j)) {
             Feature curr_feature = curr_features->nth(j);
             log << "current feature is " << curr_feature->get_name() << endl;
             curr_feature->check_feature_type();
+            log << endl;
         }
-
         for (int j = 0; j < path.size(); ++j) {
             env->O->exitscope();
         }
     }
-    // log << classtable->check_less_or_equal(IO, Object) << endl;
-    // exit(1);
 
+    // log << "*****end semantic check*****" << endl;
     if (classtable->errors()) {
         cerr << "Compilation halted due to static semantic errors." << endl;
         exit(1);

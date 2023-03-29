@@ -1,24 +1,3 @@
-current feature is a
-
-current feature is b
-
-current feature is init
-block class {}
-assign class a:Int<-Int
-assign class b:Bool<-Bool
-dispatch class  a()
-check less or equal SELF_TYPE    SELF_TYPE
-
-current feature is a
-block class {}
-check less or equal SELF_TYPE    SELF_TYPE
-
-current feature is main
-block class {}
-dispatch class  init()
-new class
-check less or equal C    A
-
 #1
 _program
   #1
