@@ -1,34 +1,39 @@
 class C inherits A{
 	a : Int <- 0;
 	b : Bool;
+	c : A <- (new A);
 	-- c : Bool; 
-	init(x : Int, y : Bool) : SELF_TYPE {
+	init(x : Int, y : Bool) : A {
            {
 		a <- x;
 		b <- y;
+		c@IO.out_string("123");
 		a(x);
            }
 	};
-	-- test(x:Int,y:Bool):A{
-	-- 	{
-	-- 		a(x);
-	-- 	}
-	-- };
 
 };
 
 class A inherits IO{
 	-- a:Int;
-	a(x:Int):SELF_TYPE{{
+	a(x:Int):A{
+		{
 		self;
-	}
+		}
 	};
 
-	-- test(x:Int,y:Bool):A{
-	-- 	{
-	-- 		self;
-	-- 	}
-	-- };
+-- IF expr THEN expr ELSE expr FI
+	test(x:Int,y:Bool):Int{
+		{
+			if ( y = true) then {
+				x;
+			} else {
+				0;
+				1;
+			}
+			fi;
+		}
+	};
 };
 
 Class Main  {

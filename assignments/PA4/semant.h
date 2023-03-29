@@ -29,7 +29,7 @@ class Env {
     Class_ C;
     SymbolTable<Symbol, Symbol>* O;
     std::map<Class_, MethodTable> M;
-   Env() {
+    Env() {
         O = new SymbolTable<Symbol, Symbol>();
         C = NULL;
     }
@@ -53,7 +53,9 @@ class ClassTable {
     void check_inherit(Classes classes);
     bool check_less_or_equal(Symbol T0, Symbol T1);
     std::list<Symbol> get_inherit_path(Symbol type);
-    bool is_class_exist(Symbol class_){
+    Symbol get_common_parent(Symbol t0, Symbol t1);
+    method_class* get_curr_method(Symbol name, std::list<Symbol> path);
+    bool is_class_exist(Symbol class_) {
         return all_classes.find(class_) != all_classes.end();
     }
 };

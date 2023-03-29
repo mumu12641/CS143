@@ -203,6 +203,9 @@ class method_class : public Feature_class {
     bool is_attr() { return false; }
     void check_feature_type();
 
+    bool check_method_attribute(Expressions actual);
+    
+
 #ifdef Feature_SHARED_EXTRAS
     Feature_SHARED_EXTRAS
 #endif

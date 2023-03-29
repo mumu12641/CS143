@@ -189,8 +189,46 @@ std::list<Symbol> ClassTable::get_inherit_path(Symbol type) {
     for (; type != No_class; type = all_classes[type]->get_parent()) {
         path.push_front(type);
     }
-
     return path;
+}
+
+Symbol ClassTable::get_common_parent(Symbol t0, Symbol t1) {
+    if (t0 == t1) {
+        return t0;
+    }
+    std::list<Symbol> path0 = get_inherit_path(t0);
+    std::list<Symbol> path1 = get_inherit_path(t1);
+
+    Symbol common_parent = Object;
+    std::list<Symbol>::reverse_iterator iter0 = path0.rbegin();
+    std::list<Symbol>::reverse_iterator iter1 = path1.rbegin();
+
+    log << path0.size() << endl;
+    for (; iter0 != path0.rend() && iter1 != path1.rend(); ++iter0, ++iter1) {
+        if (*iter0 == *iter1) {
+            common_parent = *iter0;
+        } else {
+            break;
+        }
+    }
+    return common_parent;
+}
+
+method_class* ClassTable::get_curr_method(Symbol name, std::list<Symbol> path) {
+    method_class* curr_method = NULL;
+    for (std::list<Symbol>::reverse_iterator iter = path.rbegin();
+         iter != path.rend(); ++iter) {
+        Symbol curr_class = *iter;
+        SymbolTable<Symbol, method_class>* method_table =
+            env->M[classtable->all_classes[curr_class]];
+        curr_method = method_table->lookup(name);
+
+        if (curr_method != NULL) {
+            break;
+        }
+    }
+    // if(curr_method == NULL)
+    return curr_method;
 }
 
 void ClassTable::install_basic_classes() {
@@ -363,6 +401,38 @@ void method_class::check_feature_type() {
     env->O->exitscope();
 }
 
+bool method_class::check_method_attribute(Expressions actual) {
+    Formals curr_formals = get_formals();
+    if (actual->len() != curr_formals->len()) {
+        classtable->semant_error(env->C)
+            << "Method " << name << " called with wrong number of arguments."
+            << endl;
+        // set_type(Object);
+        // return type;
+        return false;
+    }
+    for (int i = curr_formals->first(), j = actual->first();
+         curr_formals->more(i) && actual->more(j);
+         i = curr_formals->next(i), j = actual->next(j)) {
+        Formal curr_formal = curr_formals->nth(i);
+        Expression curr_actual = actual->nth(j);
+        Symbol curr_type = curr_actual->check_expr_type();
+
+        if (!classtable->check_less_or_equal(curr_type,
+                                             curr_formal->get_type())) {
+            classtable->semant_error(env->C)
+                << "In call of method " << name << ", type " << curr_type
+                << " of parameter " << curr_formal->get_name()
+                << " does not conform to declared type "
+                << curr_formal->get_type() << endl;
+            // set_type(Object);
+            // return type;
+            return false;
+        }
+    }
+    return true;
+}
+
 void attr_class::add_method_to_table(Class_ class_) {}
 
 void attr_class::add_attr_to_table(Class_ class_) {
@@ -415,7 +485,35 @@ Symbol assign_class::check_expr_type() {
 }
 
 Symbol static_dispatch_class::check_expr_type() {
-    return NULL;
+    // expr; type_name; name; actual
+    log << "static dispatch class " << expr << "@" << name << "()" << endl;
+    Symbol expr_type = expr->check_expr_type();
+    std::list<Symbol> path;
+    if (!classtable->check_less_or_equal(expr_type, type_name)) {
+        classtable->semant_error(env->C)
+            << "Expression type " << expr_type
+            << " does not conform to declared static dispatch type "
+            << type_name << endl;
+    }
+    path = classtable->get_inherit_path(type_name);
+    method_class* curr_method = classtable->get_curr_method(name, path);
+
+    if (curr_method == NULL) {
+        classtable->semant_error(env->C)
+            << "Static dispatch to undefind method " << name << endl;
+        set_type(Object);
+        return type;
+    }
+    if (!curr_method->check_method_attribute(actual)) {
+        set_type(Object);
+        return type;
+    }
+    if (curr_method->get_return_type() == SELF_TYPE) {
+        set_type(expr_type);
+    } else {
+        set_type(curr_method->get_return_type());
+    }
+    return type;
 }
 
 Symbol dispatch_class::check_expr_type() {
@@ -425,23 +523,13 @@ Symbol dispatch_class::check_expr_type() {
     Symbol expr_type = expr->check_expr_type();
     std::list<Symbol> path;
     if (expr_type == SELF_TYPE) {
-        // expr_type = env->C->get_name();
         path = classtable->get_inherit_path(env->C->get_name());
     } else {
         path = classtable->get_inherit_path(expr_type);
     }
 
-    method_class* curr_method = NULL;
-    for (std::list<Symbol>::reverse_iterator iter = path.rbegin();
-         iter != path.rend(); ++iter) {
-        Symbol curr_class = *iter;
-        SymbolTable<Symbol, method_class>* method_table =
-            env->M[classtable->all_classes[curr_class]];
-        curr_method = method_table->lookup(name);
-        if (curr_method != NULL) {
-            break;
-        }
-    }
+    method_class* curr_method = classtable->get_curr_method(name, path);
+
     if (curr_method == NULL) {
         classtable->semant_error(env->C)
             << "Dispatch to undefind method " << name << endl;
@@ -450,31 +538,9 @@ Symbol dispatch_class::check_expr_type() {
     }
 
     // check method's attribute
-    Formals curr_formals = curr_method->get_formals();
-    if (actual->len() != curr_formals->len()) {
-        classtable->semant_error(env->C)
-            << "Method " << name << " called with wrong number of arguments."
-            << endl;
+    if (!curr_method->check_method_attribute(actual)) {
         set_type(Object);
         return type;
-    }
-    for (int i = curr_formals->first(), j = actual->first();
-         curr_formals->more(i) && actual->more(j);
-         i = curr_formals->next(i), j = actual->next(j)) {
-        Formal curr_formal = curr_formals->nth(i);
-        Expression curr_actual = actual->nth(j);
-        Symbol curr_type = curr_actual->check_expr_type();
-
-        if (!classtable->check_less_or_equal(curr_type,
-                                             curr_formal->get_type())) {
-            classtable->semant_error(env->C)
-                << "In call of method " << name << ", type " << curr_type
-                << " of parameter " << curr_formal->get_name()
-                << " does not conform to declared type "
-                << curr_formal->get_type() << endl;
-            set_type(Object);
-            return type;
-        }
     }
 
     if (curr_method->get_return_type() == SELF_TYPE) {
@@ -487,7 +553,21 @@ Symbol dispatch_class::check_expr_type() {
 }
 
 Symbol cond_class::check_expr_type() {
-    return NULL;
+    // pred; then_exp; else_exp
+    log << "cond class if then else fi" << endl;
+    Symbol cond_type = pred->check_expr_type();
+    Symbol then_type = then_exp->check_expr_type();
+    Symbol else_type = else_exp->check_expr_type();
+    if (cond_type != Bool) {
+        classtable->semant_error(env->C)
+            << "Predicate of 'if' does not have type Bool." << endl;
+        set_type(Object);
+        return type;
+    }
+    log << then_type << "   " << else_type << endl;
+    set_type(classtable->get_common_parent(then_type, else_type));
+    log << "cond class if then else fi " << type << endl;
+    return type;
 }
 
 Symbol loop_class::check_expr_type() {
@@ -533,11 +613,23 @@ Symbol neg_class::check_expr_type() {
 }
 
 Symbol lt_class::check_expr_type() {
+    log << "lt class" << endl;
     return NULL;
 }
 
 Symbol eq_class::check_expr_type() {
-    return NULL;
+    log << "eq class" << endl;
+    // e1; e2;
+    Symbol type1 = e1->check_expr_type();
+    Symbol type2 = e2->check_expr_type();
+    if (type1 != type2) {
+        classtable->semant_error(env->C)
+            << "Illegal comparison with a basic type." << endl;
+        set_type(Object);
+        return type;
+    }
+    set_type(Bool);
+    return type;
 }
 
 Symbol leq_class::check_expr_type() {
@@ -675,7 +767,8 @@ void program_class::semant() {
                                 classtable->semant_error(
                                     classtable
                                         ->all_classes[curr_class->get_name()])
-                                    << "Method override error: formal type not "
+                                    << "Method override error: formal type "
+                                       "not "
                                        "match."
                                     << endl;
                             }
