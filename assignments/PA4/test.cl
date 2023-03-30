@@ -16,6 +16,7 @@ class C inherits A{
 
 class A inherits IO{
 	-- a:Int;
+	moo:Object;
 	a(x:Int):A{
 		{
 		self;
@@ -25,6 +26,21 @@ class A inherits IO{
 -- IF expr THEN expr ELSE expr FI
 	test(x:Int,y:Bool):Int{
 		{
+			-- let expression
+			let z : A ,sum:Int <- 0 in {
+
+				not true;
+				while true loop 2 pool;
+				1 < 2;
+				2 <= 3;
+				sum / 1;
+				~1;
+				sum <- 1;
+				sum;
+				z.a(0);
+			};
+
+			-- if expression
 			if ( y = true) then {
 				x;
 			} else {
@@ -34,6 +50,11 @@ class A inherits IO{
 			fi;
 		}
 	};
+
+	boo():Object {{ case moo of i:Int => 0;
+			        b:Bool => true;
+			        s:String => "1";
+		     esac; }};
 };
 
 Class Main  {

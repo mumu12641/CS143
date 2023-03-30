@@ -102,6 +102,9 @@ class Case_class : public tree_node {
    public:
     tree_node* copy() { return copy_Case(); }
     virtual Case copy_Case() = 0;
+    virtual Symbol get_name() = 0;
+    virtual Symbol get_type_decl() = 0;
+    virtual Expression get_expr() = 0;
 
 #ifdef Case_EXTRAS
     Case_EXTRAS
@@ -204,7 +207,6 @@ class method_class : public Feature_class {
     void check_feature_type();
 
     bool check_method_attribute(Expressions actual);
-    
 
 #ifdef Feature_SHARED_EXTRAS
     Feature_SHARED_EXTRAS
@@ -285,6 +287,9 @@ class branch_class : public Case_class {
     }
     Case copy_Case();
     void dump(ostream& stream, int n);
+    Symbol get_name() { return name; }
+    Symbol get_type_decl() { return type_decl; }
+    Expression get_expr() { return expr; }
 
 #ifdef Case_SHARED_EXTRAS
     Case_SHARED_EXTRAS
