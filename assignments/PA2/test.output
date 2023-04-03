@@ -1,4 +1,4 @@
-#name "./test.cl"
+#name "test.cl"
 #48 CLASS
 #48 TYPEID CellularAutomaton
 #48 INHERITS

@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <algorithm>
 #include <string>
+#include <vector>
 
 #include "utilities.h"
 
@@ -32,7 +33,9 @@ std::string main_str = "Main";
 Env* env = new Env();
 static ClassTable* classtable;
 
-static std::ostream& log = std::cout;
+static bool LOG_FLAG = false;
+static std::ostringstream nop_sstream;
+static std::ostream& log = LOG_FLAG ? std::cout : nop_sstream;
 
 //
 // Initializing the predefined symbols.
@@ -129,11 +132,18 @@ void ClassTable::check_main(Classes classes) {
 
         if (all_classes.find(classes->nth(i)->get_name()) !=
             all_classes.end()) {
+            if (classes->nth(i)->get_name() == Object) {
+                semant_error(classes->nth(i))
+                    << "Redefinition of basic class "
+                    << classes->nth(i)->get_name() << "." << endl;
+                cerr << "Compilation halted due to static semantic errors."
+                     << endl;
+                exit(1);
+            }
             semant_error(classes->nth(i))
                 << "Error! Class " << classes->nth(i)->get_name()
                 << " has been defined!" << endl;
-            // << "Redefinition of basic class " << classes->nth(i)->get_name()
-            // << "." << endl;
+
             return;
         } else {
             all_classes.insert({classes->nth(i)->get_name(), classes->nth(i)});
@@ -225,8 +235,15 @@ std::list<Symbol> ClassTable::get_inherit_path(Symbol type) {
 // }
 
 Symbol ClassTable::get_common_parent(Symbol t0, Symbol t1) {
+    // if t0 == SELF_TYPE, t1 = Object
     if (t0 == t1) {
         return t0;
+    }
+    if (t0 == SELF_TYPE) {
+        t0 = env->C->get_name();
+    }
+    if (t1 == SELF_TYPE) {
+        t1 = env->C->get_name();
     }
     std::list<Symbol> path0 = get_inherit_path(t0);
     std::list<Symbol> path1 = get_inherit_path(t1);
@@ -235,7 +252,7 @@ Symbol ClassTable::get_common_parent(Symbol t0, Symbol t1) {
     std::list<Symbol>::iterator iter0 = path0.begin();
     std::list<Symbol>::iterator iter1 = path1.begin();
 
-    // log << path0.size() << endl;
+    log << path0.size() << endl;
     for (; iter0 != path0.end() && iter1 != path1.end(); ++iter0, ++iter1) {
         if (*iter0 == *iter1) {
             common_parent = *iter0;
@@ -261,6 +278,11 @@ method_class* ClassTable::get_curr_method(Symbol name, std::list<Symbol> path) {
     }
     // if(curr_method == NULL)
     return curr_method;
+}
+
+bool ClassTable::is_basic_type(Symbol type1) {
+    return type1 == Int || type1 == Bool || type1 == Str || type1 == IO ||
+           type1 == Object;
 }
 
 void ClassTable::install_basic_classes() {
@@ -398,6 +420,7 @@ void method_class::add_method_to_table(Class_ class_) {
     //     name, new method_class(copy_Symbol(name), formals->copy_list(),
     //                            copy_Symbol(return_type),
     //                            expr->copy_Expression()));
+    log << "current add method is " << name << endl;
     env->M[class_]->addid(name, this);
 }
 
@@ -477,8 +500,6 @@ bool method_class::check_method_attribute(Expressions actual) {
                 << " of parameter " << curr_formal->get_name()
                 << " does not conform to declared type "
                 << curr_formal->get_type() << "." << endl;
-            // set_type(Object);
-            // return type;
             return false;
         }
     }
@@ -522,8 +543,8 @@ Symbol assign_class::check_expr_type() {
     }
     Symbol expr_type = expr->check_expr_type();
     Symbol* type_p = env->O->lookup(name);
-    // log << "assign class " << name << ":" << *type_p << "<-" << expr_type
-    //  << endl;
+    log << "assign class " << name << ":" << *type_p << "<-" << expr_type
+        << endl;
     if (type_p == NULL) {
         classtable->semant_error(env->C->get_filename(), this)
             << "Assignment to undeclared variable " << name << "." << endl;
@@ -544,7 +565,7 @@ Symbol assign_class::check_expr_type() {
 
 Symbol static_dispatch_class::check_expr_type() {
     // expr; type_name; name; actual
-    // log << "static dispatch class " << expr << "@" << name << "()" << endl;
+    log << "static dispatch class " << expr << "@" << name << "()" << endl;
     Symbol expr_type = expr->check_expr_type();
     std::list<Symbol> path;
     if (!classtable->check_less_or_equal(expr_type, type_name)) {
@@ -575,11 +596,11 @@ Symbol static_dispatch_class::check_expr_type() {
 }
 
 Symbol dispatch_class::check_expr_type() {
-    // log << "dispatch class  " << name << "()" << endl;
     //  expr; name; actual;
-
     Symbol expr_type = expr->check_expr_type();
+    log << "dispatch class  " << expr_type << "." << name << "()" << endl;
     std::list<Symbol> path;
+
     if (expr_type == SELF_TYPE) {
         path = classtable->get_inherit_path(env->C->get_name());
     } else {
@@ -606,16 +627,19 @@ Symbol dispatch_class::check_expr_type() {
     } else {
         set_type(curr_method->get_return_type());
     }
-
+    log << curr_method->get_name() << "() return type is " << type << endl;
     return type;
 }
 
 Symbol cond_class::check_expr_type() {
     // pred; then_exp; else_exp
-    // log << "cond class if then else fi" << endl;
+    log << "cond class if then else fi" << endl;
     Symbol cond_type = pred->check_expr_type();
+    log << "cond_type " << cond_type << endl;
     Symbol then_type = then_exp->check_expr_type();
+    log << "then_type " << then_type << endl;
     Symbol else_type = else_exp->check_expr_type();
+    log << "else_type " << else_type << endl;
     if (cond_type != Bool) {
         classtable->semant_error(env->C->get_filename(), this)
             << "Predicate of 'if' does not have type Bool." << endl;
@@ -623,6 +647,7 @@ Symbol cond_class::check_expr_type() {
         return type;
     }
     set_type(classtable->get_common_parent(then_type, else_type));
+    log << "cond class if then else fi return " << type << endl << endl;
     return type;
 }
 
@@ -639,36 +664,66 @@ Symbol loop_class::check_expr_type() {
     return type;
 }
 
+Symbol branch_class::check_branch_type() {
+    env->O->enterscope();
+    env->O->addid(name, new Symbol(type_decl));
+    Symbol type = expr->check_expr_type();
+    env->O->exitscope();
+    return type;
+}
+
 Symbol typcase_class::check_expr_type() {
     // typecase class: expr; cases
+
+    // { case moo of i:Int => i;
+    // 		        b:Bool => b;
+    // 		        s:String => s;
+    // 	     esac;
+    // 	}
+
     Symbol expr_type = expr->check_expr_type();
-    Symbol return_type;
+
+    Case branch;
+    std::vector<Symbol> branch_types;
+    std::vector<Symbol> branch_type_decls;
+
     for (int i = cases->first(); cases->more(i); i = cases->next(i)) {
-        Case branch = cases->nth(i);
-        Symbol type_ = branch->get_expr()->check_expr_type();
-        if (i == 0) {
-            return_type = type_;
-        } else {
-            return_type = classtable->get_common_parent(type_, return_type);
+        branch = cases->nth(i);
+        Symbol branch_type = branch->check_branch_type();
+        branch_types.push_back(branch_type);
+        branch_type_decls.push_back(((branch_class*)branch)->get_type_decl());
+    }
+
+    for (int i = 0; i < branch_types.size() - 1; ++i) {
+        for (int j = i + 1; j < branch_types.size(); ++j) {
+            if (branch_type_decls[i] == branch_type_decls[j]) {
+                classtable->semant_error(env->C)
+                    << "Error! Two branches have same type." << std::endl;
+            }
         }
     }
-    set_type(return_type);
+
+    type = branch_types[0];
+    for (int i = 1; i < branch_types.size(); ++i) {
+        type = classtable->get_common_parent(type, branch_types[i]);
+    }
     return type;
 }
 
 Symbol block_class::check_expr_type() {
-    // log << "block class {}" << endl;
+    log << "block class {}" << endl;
     Symbol type;
     for (int i = body->first(); body->more(i); i = body->next(i)) {
         type = body->nth(i)->check_expr_type();
     }
     set_type(type);
+    log << "block class {} return " << type << endl << endl;
     return type;
 }
 
 Symbol let_class::check_expr_type() {
     // identifier; type_decl; init; body
-    // log << "let class" << endl;
+    log << "let class" << endl;
     if (identifier == self) {
         classtable->semant_error(env->C->get_filename(), this)
             << "'self' cannot be bound in a 'let' expression." << endl;
@@ -694,7 +749,7 @@ Symbol let_class::check_expr_type() {
         env->O->addid(identifier, new Symbol(classtable->get_common_parent(
                                       init_type, type_decl)));
     }
-    // log << "z type is  " << *(env->O->lookup(identifier)) << endl;
+    log << "z type is  " << *(env->O->lookup(identifier)) << endl;
     Symbol body_type = body->check_expr_type();
 
     env->O->exitscope();
@@ -773,7 +828,7 @@ Symbol neg_class::check_expr_type() {
 
 Symbol lt_class::check_expr_type() {
     // <
-    // log << "lt class" << endl;
+    log << "lt class" << endl;
     Symbol type1 = e1->check_expr_type();
     Symbol type2 = e2->check_expr_type();
     if (type1 == Int && type2 == Int) {
@@ -788,11 +843,12 @@ Symbol lt_class::check_expr_type() {
 }
 
 Symbol eq_class::check_expr_type() {
-    // log << "eq class" << endl;
+    log << "eq class" << endl;
     //  e1; e2;
     Symbol type1 = e1->check_expr_type();
     Symbol type2 = e2->check_expr_type();
-    if (type1 != type2) {
+    if (classtable->is_basic_type(type1) && classtable->is_basic_type(type2) &&
+        type1 != type2) {
         classtable->semant_error(env->C->get_filename(), this)
             << "Illegal comparison with a basic type." << endl;
         set_type(Object);
@@ -803,7 +859,7 @@ Symbol eq_class::check_expr_type() {
 }
 
 Symbol leq_class::check_expr_type() {
-    // log << "leq class" << endl;
+    log << "leq class" << endl;
     //  LE
     Symbol type1 = e1->check_expr_type();
     Symbol type2 = e2->check_expr_type();
@@ -820,7 +876,7 @@ Symbol leq_class::check_expr_type() {
 }
 
 Symbol comp_class::check_expr_type() {
-    // log << "comp class" << endl;
+    log << "comp class" << endl;
     //  not
     Symbol type_ = e1->check_expr_type();
     if (type_ != Bool) {
@@ -848,7 +904,7 @@ Symbol string_const_class::check_expr_type() {
 }
 
 Symbol new__class::check_expr_type() {
-    // log << "new class" << endl;
+    log << "new class" << endl;
     //  type_name
     if (type_name == SELF_TYPE) {
         set_type(SELF_TYPE);
@@ -910,6 +966,7 @@ void program_class::semant() {
          iter != classtable->all_classes.end(); iter++) {
         Class_ curr_class = iter->second;
         Features curr_features = curr_class->get_features();
+        log << "first pass current class is " << curr_class->get_name() << endl;
 
         env->M[curr_class] = new SymbolTable<Symbol, method_class>();
         env->M[curr_class]->enterscope();
@@ -917,12 +974,13 @@ void program_class::semant() {
              i = curr_features->next(i)) {
             Feature curr_feature = curr_features->nth(i);
 
-            if (curr_feature->is_method()) {
-                curr_feature->add_method_to_table(curr_class);
-            }
+            // if (curr_feature->is_method()) {
+            curr_feature->add_method_to_table(curr_class);
+            // }
         }
+        log << endl;
     }
-
+    log << endl;
     // second pass -- check overriding
     for (std::map<Symbol, Class_>::iterator iter =
              classtable->all_classes.begin();
@@ -1001,7 +1059,10 @@ void program_class::semant() {
         std::list<Symbol> path =
             classtable->get_inherit_path(curr_class->get_name());
         env->C = curr_class;
+        log << "now class is " << env->C->get_name() << " features sum is "
+            << curr_class->get_features()->len() << endl;
 
+        // add parent's attr to son
         for (std::list<Symbol>::iterator iter = path.begin();
              iter != path.end(); ++iter) {
             env->O->enterscope();
@@ -1023,11 +1084,15 @@ void program_class::semant() {
         for (int j = curr_features->first(); curr_features->more(j);
              j = curr_features->next(j)) {
             Feature curr_feature = curr_features->nth(j);
+            log << "now feature is " << curr_feature->get_name() << endl;
             curr_feature->check_feature_type();
+            log << "end check feature type" << endl;
+            log << endl;
         }
         for (int j = 0; j < path.size(); ++j) {
             env->O->exitscope();
         }
+        log << endl;
     }
 
     if (classtable->errors()) {

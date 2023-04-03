@@ -86,6 +86,11 @@ number          {digit}+(\.{digit}+)?(E[+-]?{digit}+)?
 <COMMENT>"*)"    {
         BEGIN(INITIAL);
 }
+
+<COMMENT>[()*] {
+        
+}
+
 <COMMENT>[^(\*\)] {
 
 }

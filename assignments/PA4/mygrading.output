@@ -8,14 +8,9 @@ make: 离开目录“/home/pb/Code/CS143/assignments/PA4”
 =====================================================================
 submission: ..
 
-	-1 (compare)	 Legal equality comparison
-	-1 (hairyscary)	 Messy legal Cool program
-	-1 (list)	 List program
-	-1 (redefinedobject)	 Redefinition of basic class Object (illegal)
-	-1 (simplecase)	 A simple case expr
 =====================================================================
-You got a score of 69 out of 74.
+You got a score of 74 out of 74.
 
 Submit code: 
-PA3-69:42c710796a2dc8ccbbf65f6c245bbae5
+PA3-74:a88e7b09ee0cf795e75880f1c74677af
 

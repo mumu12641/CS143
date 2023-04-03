@@ -58,6 +58,7 @@ class ClassTable {
     bool is_class_exist(Symbol class_) {
         return all_classes.find(class_) != all_classes.end();
     }
+    bool is_basic_type(Symbol type1);
 };
 
 #endif

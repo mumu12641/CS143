@@ -105,6 +105,7 @@ class Case_class : public tree_node {
     virtual Symbol get_name() = 0;
     virtual Symbol get_type_decl() = 0;
     virtual Expression get_expr() = 0;
+    virtual Symbol check_branch_type() = 0;
 
 #ifdef Case_EXTRAS
     Case_EXTRAS
@@ -290,6 +291,7 @@ class branch_class : public Case_class {
     Symbol get_name() { return name; }
     Symbol get_type_decl() { return type_decl; }
     Expression get_expr() { return expr; }
+    Symbol check_branch_type();
 
 #ifdef Case_SHARED_EXTRAS
     Case_SHARED_EXTRAS
