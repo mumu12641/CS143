@@ -52,6 +52,7 @@ cgen:	${OBJS} parser semant
 
 dotest:	cgen example.cl
 	@echo "\nRunning code generator on example.cl\n"
+	../../bin/coolc ./example.cl -o example_coolc.s
 	-./mycoolc example.cl
 
 ${LIBS}:
