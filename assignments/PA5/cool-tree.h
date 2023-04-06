@@ -46,7 +46,8 @@ class Feature_class : public tree_node {
     tree_node* copy() { return copy_Feature(); }
     virtual Feature copy_Feature() = 0;
     virtual bool is_method() = 0;
-    virtual Symbol get_type_decl() = 0;
+    virtual Symbol get_type_decl() {return NULL;}
+    virtual Expression get_init() {return NULL;}
 
 #ifdef Feature_EXTRAS
     Feature_EXTRAS
@@ -73,6 +74,7 @@ class Expression_class : public tree_node {
    public:
     tree_node* copy() { return copy_Expression(); }
     virtual Expression copy_Expression() = 0;
+    virtual bool is_empty() { return false; }
 
 #ifdef Expression_EXTRAS
     Expression_EXTRAS
@@ -176,7 +178,6 @@ class method_class : public Feature_class {
     Feature copy_Feature();
     void dump(ostream& stream, int n);
     bool is_method() { return true; }
-    Symbol get_type_decl(){return NULL;}
 
 #ifdef Feature_SHARED_EXTRAS
     Feature_SHARED_EXTRAS
@@ -202,7 +203,8 @@ class attr_class : public Feature_class {
     Feature copy_Feature();
     void dump(ostream& stream, int n);
     bool is_method() { return false; }
-    Symbol get_type_decl(){return type_decl;}
+    Symbol get_type_decl() { return type_decl; }
+    Expression get_init() { return init; }
 
 #ifdef Feature_SHARED_EXTRAS
     Feature_SHARED_EXTRAS
@@ -729,6 +731,7 @@ class no_expr_class : public Expression_class {
     no_expr_class() {}
     Expression copy_Expression();
     void dump(ostream& stream, int n);
+    bool is_empty() { return true; }
 
 #ifdef Expression_SHARED_EXTRAS
     Expression_SHARED_EXTRAS

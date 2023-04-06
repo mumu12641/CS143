@@ -1,49 +1,8 @@
-
-Running code generator on example.cl
-
-../../bin/coolc ./example.cl -o example_coolc.s
-./mycoolc example.cl
-install class Object     0x557affe02bc0
-install class IO     0x557affe040b0
-install class Int     0x557affe04290
-install class Bool     0x557affe04470
-install class String     0x557affe04a40
-install class Main     0x557affe04b70
-install class Test     0x557affe04ca0
-code class name table
-Object
-IO
-Int
-Bool
-String
-Main
-Test
-
-current class is Object
-current parent is Object
-build vetor parents
-current class is IO
-current parent is IO
-current parent is Object
-build vetor parents
-current class is Int
-current parent is Int
-current parent is Object
-build vetor parents
-current class is Bool
-current parent is Bool
-current parent is Object
-build vetor parents
-current class is String
-current parent is String
-current parent is Object
-build vetor parents
-current class is Main
-current parent is Main
-current parent is Object
-build vetor parents
-current class is Test
-current parent is Test
-current parent is Object
-build vetor parents
-
+94c94
+< 	la	$a0 str_const1
+---
+> 	la	$a0 str_const0
+101c101
+< 	jr	$ra
+---
+> 	jr	$ra	

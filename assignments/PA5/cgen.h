@@ -40,6 +40,8 @@ class CgenClassTable : public SymbolTable<Symbol, CgenNode> {
     void code_class_obj_table();
     void code_dispatch_table();
     void code_prot_obj();
+    void code_init_method();
+    void code_class_method();
 
     // The following creates an inheritance graph from
     // a list of classes.  The graph is implemented as
@@ -78,6 +80,8 @@ class CgenNode : public class__class {
 
     std::vector<method_class*> get_methods();
     std::vector<attr_class*> get_attrs();
+    std::map<Symbol, int> get_attrs_offset();
+    void code_init(ostream& str);
     int class_tag;
 };
 

@@ -436,9 +436,8 @@ void IntEntry::code_def(ostream& s, int intclasstag) {
       << WORD;
 
     /***** Add dispatch information for class Int ******/
-
-    s << endl;                 // dispatch table
-    s << WORD << str << endl;  // integer value
+    s << "Int" << DISPTAB_SUFFIX << endl;  // dispatch table
+    s << WORD << str << endl;              // integer value
 }
 
 //
@@ -479,8 +478,8 @@ void BoolConst::code_def(ostream& s, int boolclasstag) {
 
     /***** Add dispatch information for class Bool ******/
 
-    s << endl;                 // dispatch table
-    s << WORD << val << endl;  // value (0 or 1)
+    s << "Bool" << DISPTAB_SUFFIX << endl;  // dispatch table
+    s << WORD << val << endl;               // value (0 or 1)
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -608,8 +607,7 @@ void CgenClassTable::code_constants() {
 void CgenClassTable::code_class_name_table() {
     log << "code class name table" << endl;
     str << CLASSNAMETAB << LABEL;
-    for (auto i = all_classes.begin(); i != all_classes.end(); i++) {
-        CgenNodeP class_node = (*i);
+    for (CgenNodeP class_node : all_classes) {
         log << class_node->get_name() << endl;
         StringEntry* e =
             stringtable.lookup_string(class_node->get_name()->get_string());
@@ -621,16 +619,14 @@ void CgenClassTable::code_class_name_table() {
 
 void CgenClassTable::code_class_obj_table() {
     str << CLASSOBJTAB << LABEL;
-    for (auto i = all_classes.begin(); i != all_classes.end(); i++) {
-        CgenNodeP class_node = (*i);
+    for (CgenNodeP class_node : all_classes) {
         str << WORD << class_node->get_name() << PROTOBJ_SUFFIX << endl;
         str << WORD << class_node->get_name() << CLASSINIT_SUFFIX << endl;
     }
     log << endl;
 }
 void CgenClassTable::code_dispatch_table() {
-    for (auto i = all_classes.begin(); i != all_classes.end(); i++) {
-        CgenNodeP class_node = (*i);
+    for (CgenNodeP class_node : all_classes) {
 
         std::vector<CgenNodeP> parents;
         str << class_node->get_name() << DISPTAB_SUFFIX << LABEL;
@@ -689,6 +685,23 @@ void CgenClassTable::code_prot_obj() {
                 str << endl;
             } else {
                 str << WORD << "0" << endl;
+            }
+        }
+    }
+}
+
+void CgenClassTable::code_init_method() {
+    for (CgenNodeP class_node : all_classes) {
+        class_node->code_init(str);
+    }
+}
+
+void CgenClassTable::code_class_method() {
+    for (auto class_node : all_classes) {
+        if (!class_node->basic()) {
+            std::vector<method_class*> all_methods = class_node->get_methods();
+            for(method_class* method_ :all_methods){
+                // method_.
             }
         }
     }
@@ -921,6 +934,54 @@ std::vector<attr_class*> CgenNode::get_attrs() {
     return all_attr;
 }
 
+std::map<Symbol, int> CgenNode::get_attrs_offset() {}
+
+void CgenNode::code_init(ostream& str) {
+    emit_init_ref(name, str);
+    str << LABEL;
+
+    // assembly code
+    // str << "# push fp s0 ra" << endl;
+    emit_addiu(SP, SP, -12, str);
+    emit_store(FP, 3, SP, str);
+    emit_store(SELF, 2, SP, str);
+    emit_store(RA, 1, SP, str);
+
+    // str << "# new frame point" << endl;
+    emit_addiu(FP, SP, 4, str);
+
+    // befor Main_init; $a0 <- Main_protObj
+    emit_move(SELF, ACC, str);
+
+    // jal to parent's init method
+    if (parentnd->get_name() != No_class) {
+        str << JAL;
+        emit_init_ref(parentnd->get_name(), str);
+        str << endl;
+    }
+
+    // init attribute
+    std::vector<attr_class*> attrs = get_attrs();
+
+    for (auto i = attrs.begin(); i != attrs.end(); i++) {
+        if (!(*i)->get_init()->is_empty()) {
+            // is not empty
+            (*i)->get_init()->code(str);
+            // offset
+            int index = i - attrs.begin();
+            emit_store(ACC, (index * 4 + 12) / WORD_SIZE, SELF, str);
+        }
+    }
+
+    // restore self
+    emit_move(ACC, SELF, str);
+    emit_load(FP, 3, SP, str);
+    emit_load(SELF, 2, SP, str);
+    emit_load(RA, 1, SP, str);
+    emit_addiu(SP, SP, 12, str);
+    emit_return(str);
+}
+
 void CgenClassTable::code() {
     if (cgen_debug)
         log << "coding global data" << endl;
@@ -962,9 +1023,11 @@ void CgenClassTable::code() {
     //                   - etc...
 
     // init method
-
+    // emit_init_ref()
+    code_init_method();
 
     // class methods
+    code_class_method();
 }
 
 CgenNodeP CgenClassTable::root() {
