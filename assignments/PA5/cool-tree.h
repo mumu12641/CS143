@@ -8,8 +8,8 @@
 //
 //////////////////////////////////////////////////////////
 
-#include "tree.h"
 #include "cool-tree.handcode.h"
+#include "tree.h"
 
 // define the class for phylum
 // define simple phylum - Program
@@ -45,6 +45,8 @@ class Feature_class : public tree_node {
    public:
     tree_node* copy() { return copy_Feature(); }
     virtual Feature copy_Feature() = 0;
+    virtual bool is_method() = 0;
+    virtual Symbol get_type_decl() = 0;
 
 #ifdef Feature_EXTRAS
     Feature_EXTRAS
@@ -173,6 +175,8 @@ class method_class : public Feature_class {
     }
     Feature copy_Feature();
     void dump(ostream& stream, int n);
+    bool is_method() { return true; }
+    Symbol get_type_decl(){return NULL;}
 
 #ifdef Feature_SHARED_EXTRAS
     Feature_SHARED_EXTRAS
@@ -197,6 +201,8 @@ class attr_class : public Feature_class {
     }
     Feature copy_Feature();
     void dump(ostream& stream, int n);
+    bool is_method() { return false; }
+    Symbol get_type_decl(){return type_decl;}
 
 #ifdef Feature_SHARED_EXTRAS
     Feature_SHARED_EXTRAS

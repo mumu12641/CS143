@@ -31,6 +31,9 @@
 #include "cgen.h"
 #include "cgen_gc.h"
 
+#include <algorithm>
+#include <vector>
+
 extern void emit_string_constant(ostream& str, char* s);
 extern int cgen_debug;
 
@@ -603,15 +606,91 @@ void CgenClassTable::code_constants() {
 }
 
 void CgenClassTable::code_class_name_table() {
-    str << CLASSNAMETAB << ":" << endl;
-    for (List<CgenNode>* l = nds; l; l = l->tl()) {
-        CgenNode* class_node = l->hd();
+    log << "code class name table" << endl;
+    str << CLASSNAMETAB << LABEL;
+    for (auto i = all_classes.begin(); i != all_classes.end(); i++) {
+        CgenNodeP class_node = (*i);
         log << class_node->get_name() << endl;
         StringEntry* e =
             stringtable.lookup_string(class_node->get_name()->get_string());
         str << WORD;
         e->code_ref(str);
         str << endl;
+    }
+}
+
+void CgenClassTable::code_class_obj_table() {
+    str << CLASSOBJTAB << LABEL;
+    for (auto i = all_classes.begin(); i != all_classes.end(); i++) {
+        CgenNodeP class_node = (*i);
+        str << WORD << class_node->get_name() << PROTOBJ_SUFFIX << endl;
+        str << WORD << class_node->get_name() << CLASSINIT_SUFFIX << endl;
+    }
+    log << endl;
+}
+void CgenClassTable::code_dispatch_table() {
+    for (auto i = all_classes.begin(); i != all_classes.end(); i++) {
+        CgenNodeP class_node = (*i);
+
+        std::vector<CgenNodeP> parents;
+        str << class_node->get_name() << DISPTAB_SUFFIX << LABEL;
+
+        CgenNode* curr_parent = class_node;
+
+        log << "current class is " << class_node->get_name() << endl;
+        do {
+            log << "current parent is " << curr_parent->get_name() << endl;
+            parents.push_back(curr_parent);
+            curr_parent = probe(curr_parent->get_parent());
+        } while (curr_parent->get_name() != No_class);
+
+        log << "build vetor parents" << endl;
+
+        for (auto i = parents.rbegin(); i != parents.rend(); i++) {
+            std::vector<method_class*> curr_methods = (*i)->get_methods();
+            for (auto j = curr_methods.begin(); j < curr_methods.end(); j++) {
+                str << WORD << (*i)->get_name() << METHOD_SEP << (*j)->name
+                    << endl;
+            }
+        }
+    }
+    log << endl;
+}
+
+void CgenClassTable::code_prot_obj() {
+    for (auto i = all_classes.begin(); i != all_classes.end(); i++) {
+
+        CgenNodeP class_node = (*i);
+        std::vector<attr_class*> all_attr = class_node->get_attrs();
+
+        str << WORD << "-1" << endl;
+        str << class_node->get_name() << PROTOBJ_SUFFIX << LABEL;
+        str << WORD << class_tags.find(class_node->get_name())->second << endl;
+        str << WORD << DEFAULT_OBJFIELDS + all_attr.size() << endl;  // size
+        str << WORD << class_node->get_name() << DISPTAB_SUFFIX << endl;
+
+        // attributes
+        for (auto i = all_attr.begin(); i != all_attr.end(); i++) {
+            attr_class* curr_attr = *i;
+            Symbol type_decl = curr_attr->get_type_decl();
+            if (type_decl == Int) {
+                IntEntry* e = inttable.lookup_string("0");
+                str << WORD;
+                e->code_ref(str);
+                str << endl;
+            } else if (type_decl == Str) {
+                StringEntry* e = stringtable.lookup_string("");
+                str << WORD;
+                e->code_ref(str);
+                str << endl;
+            } else if (type_decl == Bool) {
+                str << WORD;
+                falsebool.code_ref(str);
+                str << endl;
+            } else {
+                str << WORD << "0" << endl;
+            }
+        }
     }
 }
 
@@ -628,6 +707,15 @@ CgenClassTable::CgenClassTable(Classes classes, ostream& s)
     // install basic classes and classes from program, add to current scope
     install_basic_classes();
     install_classes(classes);
+
+    all_classes.clear();
+    for (List<CgenNode>* l = nds; l; l = l->tl()) {
+        all_classes.push_back(l->hd());
+    }
+    std::reverse(all_classes.begin(), all_classes.end());
+    for (int i = 0; i < all_classes.size(); i++) {
+        class_tags.insert({all_classes[i]->get_name(), i});
+    }
 
     // build inheritance tree, CgenNode's parent and
     build_inheritance_tree();
@@ -770,7 +858,7 @@ void CgenClassTable::install_class(CgenNodeP nd) {
     // and the symbol table.
     nds = new List<CgenNode>(nd, nds);
     addid(name, nd);
-    log << "install class " << name << this->lookup(name) << endl;
+    log << "install class " << name << "     " << this->lookup(name) << endl;
 }
 
 void CgenClassTable::install_classes(Classes cs) {
@@ -808,6 +896,31 @@ void CgenNode::set_parentnd(CgenNodeP p) {
     parentnd = p;
 }
 
+std::vector<method_class*> CgenNode::get_methods() {
+    std::vector<method_class*> m_methods;
+    for (int i = features->first(); features->more(i); i = features->next(i)) {
+        if (features->nth(i)->is_method()) {
+            m_methods.push_back((method_class*)features->nth(i));
+        }
+    }
+    return m_methods;
+}
+
+std::vector<attr_class*> CgenNode::get_attrs() {
+    Features curr_attrs = features;
+    std::vector<attr_class*> all_attr;
+
+    for (int i = curr_attrs->first(); curr_attrs->more(i);
+         i = curr_attrs->next(i)) {
+
+        Feature curr_attr = curr_attrs->nth(i);
+        if (!curr_attr->is_method()) {
+            all_attr.push_back((attr_class*)curr_attr);
+        }
+    }
+    return all_attr;
+}
+
 void CgenClassTable::code() {
     if (cgen_debug)
         log << "coding global data" << endl;
@@ -830,6 +943,15 @@ void CgenClassTable::code() {
     // class_name table
     code_class_name_table();
 
+    // class obj table
+    code_class_obj_table();
+
+    // dispatch table
+    code_dispatch_table();
+
+    // prot_obj
+    code_prot_obj();
+
     if (cgen_debug)
         log << "coding global text" << endl;
     code_global_text();
@@ -838,6 +960,11 @@ void CgenClassTable::code() {
     //                   - object initializer
     //                   - the class methods
     //                   - etc...
+
+    // init method
+
+
+    // class methods
 }
 
 CgenNodeP CgenClassTable::root() {
