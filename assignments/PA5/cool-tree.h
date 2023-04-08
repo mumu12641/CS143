@@ -47,7 +47,8 @@ class Feature_class : public tree_node {
     virtual Feature copy_Feature() = 0;
     virtual bool is_method() = 0;
     virtual Symbol get_type_decl() {return NULL;}
-    virtual Expression get_init() {return NULL;}
+    virtual Expression get_expr() {return NULL;}
+    virtual Symbol get_name() {return NULL;}
 
 #ifdef Feature_EXTRAS
     Feature_EXTRAS
@@ -178,6 +179,8 @@ class method_class : public Feature_class {
     Feature copy_Feature();
     void dump(ostream& stream, int n);
     bool is_method() { return true; }
+    Expression get_expr() { return expr; }
+    Symbol get_name(){return name;}
 
 #ifdef Feature_SHARED_EXTRAS
     Feature_SHARED_EXTRAS
@@ -204,7 +207,8 @@ class attr_class : public Feature_class {
     void dump(ostream& stream, int n);
     bool is_method() { return false; }
     Symbol get_type_decl() { return type_decl; }
-    Expression get_init() { return init; }
+    Expression get_expr() { return init; }
+    Symbol get_name(){return name;}
 
 #ifdef Feature_SHARED_EXTRAS
     Feature_SHARED_EXTRAS

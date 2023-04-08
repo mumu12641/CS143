@@ -1,8 +1,9 @@
-94c94
-< 	la	$a0 str_const1
----
-> 	la	$a0 str_const0
-101c101
-< 	jr	$ra
----
-> 	jr	$ra	
+
+Running code generator on example.cl
+
+../../bin/coolc ./example.cl -o example_coolc.s
+./mycoolc example.cl
+plus class
+env->so = Main
+dispathc class
+object class s

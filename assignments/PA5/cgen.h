@@ -1,11 +1,11 @@
 #include <assert.h>
 #include <stdio.h>
+#include <map>
+#include <memory>
+#include <vector>
 #include "cool-tree.h"
 #include "emit.h"
 #include "symtab.h"
-
-#include <map>
-#include <vector>
 
 enum Basicness { Basic, NotBasic };
 #define TRUE 1
@@ -60,6 +60,7 @@ class CgenClassTable : public SymbolTable<Symbol, CgenNode> {
     CgenNodeP root();
 
     std::map<Symbol, int> class_tags;
+    CgenNodeP get_class_node(Symbol class_name);
 };
 
 class CgenNode : public class__class {
@@ -81,6 +82,9 @@ class CgenNode : public class__class {
     std::vector<method_class*> get_methods();
     std::vector<attr_class*> get_attrs();
     std::map<Symbol, int> get_attrs_offset();
+
+    
+    std::map<Symbol, int> methods_offset;
     void code_init(ostream& str);
     int class_tag;
 };
@@ -93,4 +97,48 @@ class BoolConst {
     BoolConst(int);
     void code_def(ostream&, int boolclasstag);
     void code_ref(ostream&) const;
+};
+
+class Position {
+   public:
+    Position() : reg(NULL), offset(0) {}
+
+    char* reg;
+    int offset;
+};
+
+class Env {
+
+   public:
+    Env() : so(NULL) {
+        param_table = new SymbolTable<Symbol, int>();
+        attribute_table_map = new std::map<Symbol, SymbolTable<Symbol, int>*>();
+    }
+    ~Env() {
+        delete (param_table);
+        delete (attribute_table_map);
+    }
+
+    void attr_addid(CgenNodeP class_node, Symbol attr_name) {
+        Symbol class_name = class_node->get_name();
+        attribute_table_map->find(class_name)
+            ->second->addid(
+                attr_name,
+                &(class_node->get_attrs_offset().find(attr_name)->second));
+    }
+
+    int* find_attr(Symbol attr_name) {
+        return attribute_table_map->find(so->get_name())
+            ->second->lookup(attr_name);
+    }
+
+    // self object
+    CgenNodeP so;
+
+    // method's param
+    SymbolTable<Symbol, int>* param_table;
+
+    // class's attribute
+    // SymbolTable<Symbol, Position>* attribute_table;
+    std::map<Symbol, SymbolTable<Symbol, int>*>* attribute_table_map;
 };

@@ -25,29 +25,11 @@ _MemMgr_COLLECTOR:
 _MemMgr_TEST:
 	.word	0
 	.word	-1
-str_const11:
+str_const9:
 	.word	5
 	.word	5
 	.word	String_dispTab
 	.word	int_const2
-	.byte	0	
-	.align	2
-	.word	-1
-str_const10:
-	.word	5
-	.word	6
-	.word	String_dispTab
-	.word	int_const3
-	.ascii	"Test"
-	.byte	0	
-	.align	2
-	.word	-1
-str_const9:
-	.word	5
-	.word	6
-	.word	String_dispTab
-	.word	int_const4
-	.ascii	"String"
 	.byte	0	
 	.align	2
 	.word	-1
@@ -56,11 +38,20 @@ str_const8:
 	.word	6
 	.word	String_dispTab
 	.word	int_const3
-	.ascii	"Bool"
+	.ascii	"String"
 	.byte	0	
 	.align	2
 	.word	-1
 str_const7:
+	.word	5
+	.word	6
+	.word	String_dispTab
+	.word	int_const4
+	.ascii	"Bool"
+	.byte	0	
+	.align	2
+	.word	-1
+str_const6:
 	.word	5
 	.word	5
 	.word	String_dispTab
@@ -69,16 +60,16 @@ str_const7:
 	.byte	0	
 	.align	2
 	.word	-1
-str_const6:
+str_const5:
 	.word	5
 	.word	6
 	.word	String_dispTab
-	.word	int_const3
+	.word	int_const4
 	.ascii	"Main"
 	.byte	0	
 	.align	2
 	.word	-1
-str_const5:
+str_const4:
 	.word	5
 	.word	5
 	.word	String_dispTab
@@ -87,16 +78,16 @@ str_const5:
 	.byte	0	
 	.align	2
 	.word	-1
-str_const4:
+str_const3:
 	.word	5
 	.word	6
 	.word	String_dispTab
-	.word	int_const4
+	.word	int_const3
 	.ascii	"Object"
 	.byte	0	
 	.align	2
 	.word	-1
-str_const3:
+str_const2:
 	.word	5
 	.word	8
 	.word	String_dispTab
@@ -105,20 +96,11 @@ str_const3:
 	.byte	0	
 	.align	2
 	.word	-1
-str_const2:
-	.word	5
-	.word	6
-	.word	String_dispTab
-	.word	int_const7
-	.ascii	"world"
-	.byte	0	
-	.align	2
-	.word	-1
 str_const1:
 	.word	5
 	.word	8
 	.word	String_dispTab
-	.word	int_const8
+	.word	int_const7
 	.ascii	"./example.cl"
 	.byte	0	
 	.align	2
@@ -127,7 +109,7 @@ str_const0:
 	.word	5
 	.word	6
 	.word	String_dispTab
-	.word	int_const7
+	.word	int_const8
 	.ascii	"hello"
 	.byte	0	
 	.align	2
@@ -136,13 +118,13 @@ int_const8:
 	.word	3
 	.word	4
 	.word	Int_dispTab
-	.word	12
+	.word	5
 	.word	-1
 int_const7:
 	.word	3
 	.word	4
 	.word	Int_dispTab
-	.word	5
+	.word	12
 	.word	-1
 int_const6:
 	.word	3
@@ -160,13 +142,13 @@ int_const4:
 	.word	3
 	.word	4
 	.word	Int_dispTab
-	.word	6
+	.word	4
 	.word	-1
 int_const3:
 	.word	3
 	.word	4
 	.word	Int_dispTab
-	.word	4
+	.word	6
 	.word	-1
 int_const2:
 	.word	3
@@ -198,13 +180,12 @@ bool_const1:
 	.word	Bool_dispTab
 	.word	1
 class_nameTab:
+	.word	str_const3
 	.word	str_const4
 	.word	str_const5
 	.word	str_const6
 	.word	str_const7
 	.word	str_const8
-	.word	str_const9
-	.word	str_const10
 class_objTab:
 	.word	Object_protObj
 	.word	Object_init
@@ -218,17 +199,10 @@ class_objTab:
 	.word	Bool_init
 	.word	String_protObj
 	.word	String_init
-	.word	Test_protObj
-	.word	Test_init
 Object_dispTab:
 	.word	Object.abort
 	.word	Object.type_name
 	.word	Object.copy
-Test_dispTab:
-	.word	Object.abort
-	.word	Object.type_name
-	.word	Object.copy
-	.word	Test.test
 String_dispTab:
 	.word	Object.abort
 	.word	Object.type_name
@@ -267,11 +241,6 @@ Object_protObj:
 	.word	3
 	.word	Object_dispTab
 	.word	-1
-Test_protObj:
-	.word	6
-	.word	3
-	.word	Test_dispTab
-	.word	-1
 String_protObj:
 	.word	5
 	.word	5
@@ -298,10 +267,12 @@ IO_protObj:
 	.word	-1
 Main_protObj:
 	.word	2
-	.word	5
+	.word	7
 	.word	Main_dispTab
 	.word	int_const2
-	.word	str_const11
+	.word	str_const9
+	.word	str_const9
+	.word	bool_const0
 	.globl	heap_start
 heap_start:
 	.word	0
@@ -318,20 +289,6 @@ Object_init:
 	sw	$ra 4($sp)
 	addiu	$fp $sp 4
 	move	$s0 $a0
-	move	$a0 $s0
-	lw	$fp 12($sp)
-	lw	$s0 8($sp)
-	lw	$ra 4($sp)
-	addiu	$sp $sp 12
-	jr	$ra	
-Test_init:
-	addiu	$sp $sp -12
-	sw	$fp 12($sp)
-	sw	$s0 8($sp)
-	sw	$ra 4($sp)
-	addiu	$fp $sp 4
-	move	$s0 $a0
-	jal	Object_init
 	move	$a0 $s0
 	lw	$fp 12($sp)
 	lw	$s0 8($sp)
@@ -420,19 +377,6 @@ Main_init:
 	lw	$ra 8($sp)
 	addiu	$sp $sp 16
 	jr	$ra	
-Test.test:
-	addiu	$sp $sp -12
-	sw	$fp 12($sp)
-	sw	$s0 8($sp)
-	sw	$ra 4($sp)
-	addiu	$fp $sp 4
-	move	$s0 $a0
-	la	$a0 str_const2
-	lw	$fp 12($sp)
-	lw	$s0 8($sp)
-	lw	$ra 4($sp)
-	addiu	$sp $sp 12
-	jr	$ra	
 Main.main:
 	addiu	$sp $sp -12
 	sw	$fp 12($sp)
@@ -440,7 +384,15 @@ Main.main:
 	sw	$ra 4($sp)
 	addiu	$fp $sp 4
 	move	$s0 $a0
-	la	$a0 int_const2
+	lw	$a0 16($s0)
+	bne	$a0 $zero label0
+	la	$a0 str_const1
+	li	$t1 13
+	jal	_dispatch_abort
+label0:
+	lw	$t1 8($a0)
+	lw	$t1 12($t1)
+	jalr		$t1
 	lw	$fp 12($sp)
 	lw	$s0 8($sp)
 	lw	$ra 4($sp)

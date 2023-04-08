@@ -3,20 +3,15 @@
     as possible.
  *)
 
-class Main  inherits IO{
-  i : Int <- 3 ;
+class Main inherits IO{
+  i : Int <- 3 + 1;
   s: String <- "hello";
-  -- e: String;
-  -- t: Test;
-  -- b: Bool;
+  e: String;
+  b: Bool;
 
-  main():Int { 0 };
-};
-
-class Test{
-  test():String {
-    {
-      "world";
-    }
+  main():Object { 
+    -- s.length()
+    
   };
 };
+

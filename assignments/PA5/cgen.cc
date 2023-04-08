@@ -32,6 +32,7 @@
 #include "cgen_gc.h"
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 extern void emit_string_constant(ostream& str, char* s);
@@ -40,6 +41,10 @@ extern int cgen_debug;
 static bool LOG_FLAG = true;
 static std::ostringstream nop_sstream;
 static std::ostream& log = LOG_FLAG ? std::cout : nop_sstream;
+
+static Env* env = new Env();
+CgenClassTable* codegen_classtable = nullptr;
+int lable_num = 0;
 
 //
 // Three symbols from the semantic analyzer (semant.cc) are used.
@@ -120,8 +125,12 @@ void program_class::cgen(ostream& os) {
     // os << "# start of generated code\n";
 
     initialize_constants();
-    CgenClassTable* codegen_classtable = new CgenClassTable(classes, os);
-
+    codegen_classtable = new CgenClassTable(classes, os);
+    // std::unique_ptr<CgenClassTable> codegen_classtable(
+    //     new CgenClassTable(classes, os));
+    codegen_classtable->code();
+    // code();
+    codegen_classtable->exitscope();
     // os << "\n# end of generated code\n";
 }
 
@@ -605,10 +614,8 @@ void CgenClassTable::code_constants() {
 }
 
 void CgenClassTable::code_class_name_table() {
-    log << "code class name table" << endl;
     str << CLASSNAMETAB << LABEL;
     for (CgenNodeP class_node : all_classes) {
-        log << class_node->get_name() << endl;
         StringEntry* e =
             stringtable.lookup_string(class_node->get_name()->get_string());
         str << WORD;
@@ -623,7 +630,6 @@ void CgenClassTable::code_class_obj_table() {
         str << WORD << class_node->get_name() << PROTOBJ_SUFFIX << endl;
         str << WORD << class_node->get_name() << CLASSINIT_SUFFIX << endl;
     }
-    log << endl;
 }
 void CgenClassTable::code_dispatch_table() {
     for (CgenNodeP class_node : all_classes) {
@@ -633,24 +639,24 @@ void CgenClassTable::code_dispatch_table() {
 
         CgenNode* curr_parent = class_node;
 
-        log << "current class is " << class_node->get_name() << endl;
         do {
-            log << "current parent is " << curr_parent->get_name() << endl;
             parents.push_back(curr_parent);
             curr_parent = probe(curr_parent->get_parent());
         } while (curr_parent->get_name() != No_class);
 
-        log << "build vetor parents" << endl;
-
+        int method_index = 0;
         for (auto i = parents.rbegin(); i != parents.rend(); i++) {
             std::vector<method_class*> curr_methods = (*i)->get_methods();
             for (auto j = curr_methods.begin(); j < curr_methods.end(); j++) {
                 str << WORD << (*i)->get_name() << METHOD_SEP << (*j)->name
                     << endl;
+
+                
+                class_node->methods_offset.insert(
+                    {(*j)->get_name(), method_index++});
             }
         }
     }
-    log << endl;
 }
 
 void CgenClassTable::code_prot_obj() {
@@ -658,6 +664,8 @@ void CgenClassTable::code_prot_obj() {
 
         CgenNodeP class_node = (*i);
         std::vector<attr_class*> all_attr = class_node->get_attrs();
+        env->attribute_table_map->insert(
+            {class_node->get_name(), new SymbolTable<Symbol, int>()});
 
         str << WORD << "-1" << endl;
         str << class_node->get_name() << PROTOBJ_SUFFIX << LABEL;
@@ -666,9 +674,15 @@ void CgenClassTable::code_prot_obj() {
         str << WORD << class_node->get_name() << DISPTAB_SUFFIX << endl;
 
         // attributes
+        env->attribute_table_map->find(class_node->get_name())
+            ->second->enterscope();
+
         for (auto i = all_attr.begin(); i != all_attr.end(); i++) {
             attr_class* curr_attr = *i;
             Symbol type_decl = curr_attr->get_type_decl();
+
+            env->attr_addid(class_node, curr_attr->get_name());
+
             if (type_decl == Int) {
                 IntEntry* e = inttable.lookup_string("0");
                 str << WORD;
@@ -699,9 +713,30 @@ void CgenClassTable::code_init_method() {
 void CgenClassTable::code_class_method() {
     for (auto class_node : all_classes) {
         if (!class_node->basic()) {
+            log << "env->so = " << class_node->get_name() << endl;
+            env->so = class_node;
+
             std::vector<method_class*> all_methods = class_node->get_methods();
-            for(method_class* method_ :all_methods){
-                // method_.
+            for (method_class* method_ : all_methods) {
+                emit_method_ref(class_node->get_name(), method_->get_name(),
+                                str);
+                str << LABEL;
+
+                emit_addiu(SP, SP, -12, str);
+                emit_store(FP, 3, SP, str);
+                emit_store(SELF, 2, SP, str);
+                emit_store(RA, 1, SP, str);
+                emit_addiu(FP, SP, 4, str);
+                emit_move(SELF, ACC, str);
+
+                Expression exprs = method_->get_expr();
+                exprs->code(str);
+
+                emit_load(FP, 3, SP, str);
+                emit_load(SELF, 2, SP, str);
+                emit_load(RA, 1, SP, str);
+                emit_addiu(SP, SP, 12, str);
+                emit_return(str);
             }
         }
     }
@@ -733,8 +768,8 @@ CgenClassTable::CgenClassTable(Classes classes, ostream& s)
     // build inheritance tree, CgenNode's parent and
     build_inheritance_tree();
 
-    code();
-    exitscope();
+    // code();
+    // exitscope();
 }
 
 void CgenClassTable::install_basic_classes() {
@@ -871,7 +906,6 @@ void CgenClassTable::install_class(CgenNodeP nd) {
     // and the symbol table.
     nds = new List<CgenNode>(nd, nds);
     addid(name, nd);
-    log << "install class " << name << "     " << this->lookup(name) << endl;
 }
 
 void CgenClassTable::install_classes(Classes cs) {
@@ -897,6 +931,15 @@ void CgenClassTable::set_relations(CgenNodeP nd) {
     CgenNode* parent_node = probe(nd->get_parent());
     nd->set_parentnd(parent_node);
     parent_node->add_child(nd);
+}
+
+CgenNodeP CgenClassTable::get_class_node(Symbol class_name) {
+    for (List<CgenNode>* l = nds; l; l = l->tl()) {
+        if (l->hd()->get_name() == class_name) {
+            return l->hd();
+        }
+    }
+    return NULL;
 }
 
 void CgenNode::add_child(CgenNodeP n) {
@@ -934,7 +977,20 @@ std::vector<attr_class*> CgenNode::get_attrs() {
     return all_attr;
 }
 
-std::map<Symbol, int> CgenNode::get_attrs_offset() {}
+std::map<Symbol, int> CgenNode::get_attrs_offset() {
+    // features
+    Features curr_attrs = features;
+    std::map<Symbol, int> offset;
+    for (int i = curr_attrs->first(); curr_attrs->more(i);
+         i = curr_attrs->next(i)) {
+
+        Feature curr_attr = curr_attrs->nth(i);
+        if (!curr_attr->is_method()) {
+            offset.insert({curr_attr->get_name(), i + 3});
+        }
+    }
+    return offset;
+}
 
 void CgenNode::code_init(ostream& str) {
     emit_init_ref(name, str);
@@ -950,7 +1006,7 @@ void CgenNode::code_init(ostream& str) {
     // str << "# new frame point" << endl;
     emit_addiu(FP, SP, 4, str);
 
-    // befor Main_init; $a0 <- Main_protObj
+    // before Main_init; $a0 <- Main_protObj
     emit_move(SELF, ACC, str);
 
     // jal to parent's init method
@@ -964,9 +1020,9 @@ void CgenNode::code_init(ostream& str) {
     std::vector<attr_class*> attrs = get_attrs();
 
     for (auto i = attrs.begin(); i != attrs.end(); i++) {
-        if (!(*i)->get_init()->is_empty()) {
+        if (!(*i)->get_expr()->is_empty()) {
             // is not empty
-            (*i)->get_init()->code(str);
+            (*i)->get_expr()->code(str);
             // offset
             int index = i - attrs.begin();
             emit_store(ACC, (index * 4 + 12) / WORD_SIZE, SELF, str);
@@ -1047,6 +1103,8 @@ CgenNode::CgenNode(Class_ nd, Basicness bstatus, CgenClassTableP ct)
       basic_status(bstatus) {
     stringtable.add_string(
         name->get_string());  // Add class name to string table
+    std::unique_ptr<std::map<Symbol, int>> methods_offset(
+        new std::map<Symbol, int>());
 }
 
 //******************************************************************
@@ -1059,11 +1117,60 @@ CgenNode::CgenNode(Class_ nd, Basicness bstatus, CgenClassTableP ct)
 //
 //*****************************************************************
 
-void assign_class::code(ostream& s) {}
+void assign_class::code(ostream& s) {
+    log << "assign class" << endl;
+
+    // name expr
+    // expr result -> $a0
+    expr->code(s);
+
+    // find the name
+    int* offset;
+    if ((offset = env->find_attr(name)) != NULL) {
+        // is a attribute
+        // store $a0 -> offset($SELF)
+        emit_store(ACC, *offset, SELF, s);
+    }
+}
 
 void static_dispatch_class::code(ostream& s) {}
 
-void dispatch_class::code(ostream& s) {}
+void dispatch_class::code(ostream& s) {
+    // expr name actual
+    log << "dispathc class" << endl;
+    for (int i = actual->first(); actual->more(i); i = actual->next(i)) {
+        actual->nth(i)->code(s);
+        emit_push(ACC, s);
+    }
+    // expr -> $a0
+    expr->code(s);
+
+    // if obj = =void then jmp to abort()
+    emit_bne(ACC, ZERO, lable_num, s);
+    emit_load_address(ACC, "str_const0", s);
+    emit_load_imm(T1, 1, s);
+    emit_jal("_dispatch_abort", s);
+    emit_label_ref(lable_num, s);
+    lable_num++;
+    s << ":" << endl;
+
+    // else lable0:
+    Symbol curr_class_name = expr->get_type();
+    // if (codegen_classtable == NULL) {
+    //     s << COMMENT << "error" << endl;
+    // }
+    CgenNodeP class_node = codegen_classtable->get_class_node(curr_class_name);
+
+    // t1 = self.dispTab
+    emit_load(T1, 2, ACC, s);
+
+    // int index = class_node->methods_offset.find(name)->second();
+    int index = class_node->methods_offset.find(name)->second;
+    emit_load(T1, index, T1, s);
+
+    // emit_jal("IO.out_int", s);
+    emit_jal(T1, s);
+}
 
 void cond_class::code(ostream& s) {}
 
@@ -1071,17 +1178,91 @@ void loop_class::code(ostream& s) {}
 
 void typcase_class::code(ostream& s) {}
 
-void block_class::code(ostream& s) {}
+void block_class::code(ostream& s) {
+    for (int i = body->first(); body->more(i); i = body->next(i)) {
+        body->nth(i)->code(s);
+    }
+}
 
 void let_class::code(ostream& s) {}
 
-void plus_class::code(ostream& s) {}
+void plus_class::code(ostream& s) {
+    log << "plus class" << endl;
 
-void sub_class::code(ostream& s) {}
+    // eval e1 and push
+    e1->code(s);
+    emit_push(ACC, s);
 
-void mul_class::code(ostream& s) {}
+    // eval e2
+    e2->code(s);
+    emit_jal("Object.copy", s);
 
-void divide_class::code(ostream& s) {}
+    // pop to temp
+    emit_load(T2, 1, SP, s);
+    emit_load(T1, 3, ACC, s);
+    emit_load(T2, 3, T2, s);
+
+    // eval e1+e2
+    emit_add(T1, T1, T2, s);
+    // ACC contain the result;
+    emit_store(T1, 3, ACC, s);
+
+    emit_addiu(SP, SP, 4, s);
+}
+
+void sub_class::code(ostream& s) {
+    e1->code(s);
+    emit_push(ACC, s);
+
+    e2->code(s);
+    emit_jal("Object.copy", s);
+
+    emit_load(T2, 1, SP, s);
+    emit_load(T1, 3, ACC, s);
+    emit_load(T2, 3, T2, s);
+
+    emit_sub(T1, T1, T2, s);
+
+    emit_store(T1, 3, ACC, s);
+
+    emit_addiu(SP, SP, 4, s);
+}
+
+void mul_class::code(ostream& s) {
+    e1->code(s);
+    emit_push(ACC, s);
+
+    e2->code(s);
+    emit_jal("Object.copy", s);
+
+    emit_load(T2, 1, SP, s);
+    emit_load(T1, 3, ACC, s);
+    emit_load(T2, 3, T2, s);
+
+    emit_mul(T1, T1, T2, s);
+
+    emit_store(T1, 3, ACC, s);
+
+    emit_addiu(SP, SP, 4, s);
+}
+
+void divide_class::code(ostream& s) {
+    e1->code(s);
+    emit_push(ACC, s);
+
+    e2->code(s);
+    emit_jal("Object.copy", s);
+
+    emit_load(T2, 1, SP, s);
+    emit_load(T1, 3, ACC, s);
+    emit_load(T2, 3, T2, s);
+
+    emit_div(T1, T1, T2, s);
+
+    emit_store(T1, 3, ACC, s);
+
+    emit_addiu(SP, SP, 4, s);
+}
 
 void neg_class::code(ostream& s) {}
 
@@ -1112,6 +1293,17 @@ void new__class::code(ostream& s) {}
 
 void isvoid_class::code(ostream& s) {}
 
-void no_expr_class::code(ostream& s) {}
+void no_expr_class::code(ostream& s) {
+    log << "no expr" << endl;
+}
 
-void object_class::code(ostream& s) {}
+void object_class::code(ostream& s) {
+    log << "object class " << name << endl;
+
+    // find object
+    int* offset;
+    if ((offset = env->find_attr(name)) != NULL) {
+        // is a attribute
+        emit_load(ACC, *offset, SELF, s);
+    }
+}
