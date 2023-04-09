@@ -3,7 +3,3 @@ Running code generator on example.cl
 
 ../../bin/coolc ./example.cl -o example_coolc.s
 ./mycoolc example.cl
-plus class
-env->so = Main
-dispathc class
-object class s

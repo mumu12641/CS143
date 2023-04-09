@@ -33,18 +33,19 @@
 
 #include <algorithm>
 #include <memory>
+#include <string>
 #include <vector>
 
 extern void emit_string_constant(ostream& str, char* s);
 extern int cgen_debug;
 
-static bool LOG_FLAG = true;
+static bool LOG_FLAG = false;
 static std::ostringstream nop_sstream;
 static std::ostream& log = LOG_FLAG ? std::cout : nop_sstream;
 
 static Env* env = new Env();
 CgenClassTable* codegen_classtable = nullptr;
-int lable_num = 0;
+int label_num = 0;
 
 //
 // Three symbols from the semantic analyzer (semant.cc) are used.
@@ -651,7 +652,6 @@ void CgenClassTable::code_dispatch_table() {
                 str << WORD << (*i)->get_name() << METHOD_SEP << (*j)->name
                     << endl;
 
-                
                 class_node->methods_offset.insert(
                     {(*j)->get_name(), method_index++});
             }
@@ -713,11 +713,11 @@ void CgenClassTable::code_init_method() {
 void CgenClassTable::code_class_method() {
     for (auto class_node : all_classes) {
         if (!class_node->basic()) {
-            log << "env->so = " << class_node->get_name() << endl;
             env->so = class_node;
 
             std::vector<method_class*> all_methods = class_node->get_methods();
             for (method_class* method_ : all_methods) {
+                env->param_table.clear();
                 emit_method_ref(class_node->get_name(), method_->get_name(),
                                 str);
                 str << LABEL;
@@ -728,14 +728,18 @@ void CgenClassTable::code_class_method() {
                 emit_store(RA, 1, SP, str);
                 emit_addiu(FP, SP, 4, str);
                 emit_move(SELF, ACC, str);
-
+                for (int i = method_->formals->first();
+                     method_->formals->more(i); i = method_->formals->next(i)) {
+                    env->param_addid(method_->formals->nth(i)->get_name());
+                }
                 Expression exprs = method_->get_expr();
                 exprs->code(str);
 
                 emit_load(FP, 3, SP, str);
                 emit_load(SELF, 2, SP, str);
                 emit_load(RA, 1, SP, str);
-                emit_addiu(SP, SP, 12, str);
+
+                emit_addiu(SP, SP, 12 + method_->formals->len() * 4, str);
                 emit_return(str);
             }
         }
@@ -1133,11 +1137,9 @@ void assign_class::code(ostream& s) {
     }
 }
 
-void static_dispatch_class::code(ostream& s) {}
+void static_dispatch_class::code(ostream& s) {
+    // @type_name
 
-void dispatch_class::code(ostream& s) {
-    // expr name actual
-    log << "dispathc class" << endl;
     for (int i = actual->first(); actual->more(i); i = actual->next(i)) {
         actual->nth(i)->code(s);
         emit_push(ACC, s);
@@ -1146,19 +1148,50 @@ void dispatch_class::code(ostream& s) {
     expr->code(s);
 
     // if obj = =void then jmp to abort()
-    emit_bne(ACC, ZERO, lable_num, s);
+    emit_bne(ACC, ZERO, label_num, s);
     emit_load_address(ACC, "str_const0", s);
     emit_load_imm(T1, 1, s);
     emit_jal("_dispatch_abort", s);
-    emit_label_ref(lable_num, s);
-    lable_num++;
+    emit_label_ref(label_num, s);
+    label_num++;
+    s << ":" << endl;
+
+    // else lable0:
+    CgenNodeP class_node = codegen_classtable->get_class_node(type_name);
+
+    // t1 = self.dispTab
+    emit_load(T1, 2, ACC, s);
+
+    // int index = class_node->methods_offset.find(name)->second();
+    int index = class_node->methods_offset.find(name)->second;
+    emit_load(T1, index, T1, s);
+
+    emit_jal(T1, s);
+}
+
+void dispatch_class::code(ostream& s) {
+    // expr name actual
+    for (int i = actual->first(); actual->more(i); i = actual->next(i)) {
+        actual->nth(i)->code(s);
+        emit_push(ACC, s);
+    }
+    // expr -> $a0
+    expr->code(s);
+
+    // if obj = =void then jmp to abort()
+    emit_bne(ACC, ZERO, label_num, s);
+    emit_load_address(ACC, "str_const0", s);
+    emit_load_imm(T1, 1, s);
+    emit_jal("_dispatch_abort", s);
+    emit_label_ref(label_num, s);
+    label_num++;
     s << ":" << endl;
 
     // else lable0:
     Symbol curr_class_name = expr->get_type();
-    // if (codegen_classtable == NULL) {
-    //     s << COMMENT << "error" << endl;
-    // }
+    if (curr_class_name == SELF_TYPE) {
+        curr_class_name = env->so->get_name();
+    }
     CgenNodeP class_node = codegen_classtable->get_class_node(curr_class_name);
 
     // t1 = self.dispTab
@@ -1168,13 +1201,46 @@ void dispatch_class::code(ostream& s) {
     int index = class_node->methods_offset.find(name)->second;
     emit_load(T1, index, T1, s);
 
-    // emit_jal("IO.out_int", s);
     emit_jal(T1, s);
 }
 
-void cond_class::code(ostream& s) {}
+void cond_class::code(ostream& s) {
+    // pred then_expr else_expr
+    pred->code(s);
 
-void loop_class::code(ostream& s) {}
+    // T1 <- a0
+    emit_load(T1, 3, ACC, s);
+
+    int labelnum_false = label_num++;
+    int labelnum_finish = label_num++;
+
+    emit_beqz(T1, labelnum_false, s);
+
+    then_exp->code(s);
+
+    emit_branch(labelnum_finish, s);
+    emit_label_def(labelnum_false, s);
+    else_exp->code(s);
+    emit_label_def(labelnum_finish, s);
+}
+
+void loop_class::code(ostream& s) {
+    // pred body
+    int label_loop = label_num++;
+    int lable_finish = label_num++;
+
+    emit_label_def(label_loop, s);
+    pred->code(s);
+
+    emit_load(T1, 3, ACC, s);
+    emit_beqz(T1, lable_finish, s);
+
+    body->code(s);
+    emit_branch(label_loop, s);
+
+    emit_label_def(lable_finish, s);
+    emit_move(ACC, ZERO, s);
+}
 
 void typcase_class::code(ostream& s) {}
 
@@ -1184,7 +1250,23 @@ void block_class::code(ostream& s) {
     }
 }
 
-void let_class::code(ostream& s) {}
+void let_class::code(ostream& s) {
+    // Symbol identifier;
+    // Symbol type_decl;
+    // Expression init;
+    // Expression body;
+    s << COMMENT << "push init" << endl;
+    init->code(s);
+
+    emit_push(ACC, s);
+
+    env->var_addid(identifier);
+
+    s << COMMENT << "body" << endl;
+    body->code(s);
+    emit_addiu(SP, SP, 4, s);
+    env->var_table.clear();
+}
 
 void plus_class::code(ostream& s) {
     log << "plus class" << endl;
@@ -1264,15 +1346,99 @@ void divide_class::code(ostream& s) {
     emit_addiu(SP, SP, 4, s);
 }
 
-void neg_class::code(ostream& s) {}
+void neg_class::code(ostream& s) {
+    e1->code(s);
+    emit_jal("Object.copy", s);
+    emit_load(T1, 3, ACC, s);
+    emit_neg(T1, T1, s);
+    emit_store(T1, 3, ACC, s);
+}
 
-void lt_class::code(ostream& s) {}
+void lt_class::code(ostream& s) {
+    // e1 < e2
+    e1->code(s);
+    emit_push(ACC, s);
 
-void eq_class::code(ostream& s) {}
+    e2->code(s);
 
-void leq_class::code(ostream& s) {}
+    // T1 <- e1
+    // T2 <- e2
+    emit_load(T1, 1, SP, s);
+    emit_load(T2, 3, ACC, s);
+    emit_load(T1, 3, T1, s);
+    // sp
+    emit_addiu(SP, SP, 4, s);
 
-void comp_class::code(ostream& s) {}
+    // a0 <- true
+    emit_load_bool(ACC, BoolConst(1), s);
+
+    emit_blt(T1, T2, label_num, s);
+
+    // a0 <- false
+    emit_load_bool(ACC, BoolConst(0), s);
+
+    emit_label_ref(label_num, s);
+    label_num++;
+    s << ":" << endl;
+}
+
+void eq_class::code(ostream& s) {
+    // e1 e2
+    e1->code(s);
+    emit_push(ACC, s);
+
+    e2->code(s);
+    // T1 <- e1
+    // T2 <- e2
+    emit_load(T1, 1, SP, s);
+    emit_move(T2, ACC, s);
+    emit_addiu(SP, SP, 4, s);
+
+    emit_load_bool(ACC, BoolConst(1), s);
+    emit_beq(T1, T2, label_num, s);
+    emit_load_bool(ACC, BoolConst(0), s);
+    emit_jal("equality_test", s);
+
+    emit_label_ref(label_num, s);
+    label_num++;
+    s << ":" << endl;
+}
+
+void leq_class::code(ostream& s) {
+    // e1 e2
+    e1->code(s);
+    emit_push(ACC, s);
+
+    e2->code(s);
+    // T1 <- e1
+    // T2 <- e2
+    emit_load(T1, 1, SP, s);
+    emit_move(T2, ACC, s);
+    emit_addiu(SP, SP, 4, s);
+
+    emit_load_bool(ACC, BoolConst(1), s);
+    emit_bleq(T1, T2, label_num, s);
+    emit_load_bool(ACC, BoolConst(0), s);
+
+    emit_label_ref(label_num, s);
+    label_num++;
+    s << ":" << endl;
+}
+
+void comp_class::code(ostream& s) {
+    // not bool
+    e1->code(s);
+
+    emit_load(T1, 3, ACC, s);
+
+    emit_load_bool(ACC, BoolConst(1), s);
+    emit_beqz(T1, label_num, s);
+    emit_load_bool(ACC, BoolConst(0), s);
+
+    emit_label_ref(label_num, s);
+    label_num++;
+    s << ":" << endl;
+}
 
 void int_const_class::code(ostream& s) {
     //
@@ -1289,21 +1455,64 @@ void bool_const_class::code(ostream& s) {
     emit_load_bool(ACC, BoolConst(val), s);
 }
 
-void new__class::code(ostream& s) {}
+void new__class::code(ostream& s) {
+    // type_name
+    std::string dest = type_name->get_string();
+    dest += PROTOBJ_SUFFIX;
+    char* desr_str = new char[dest.length() + 1];
+    strcpy(desr_str, dest.c_str());
+    emit_load_address(ACC, desr_str, s);
+    emit_jal("Object.copy", s);
 
-void isvoid_class::code(ostream& s) {}
+    dest = type_name->get_string();
+    dest += CLASSINIT_SUFFIX;
+    desr_str = new char[dest.length() + 1];
+    strcpy(desr_str, dest.c_str());
+    emit_jal(desr_str, s);
+}
+
+void isvoid_class::code(ostream& s) {
+    e1->code(s);
+    emit_move(T1, ACC, s);
+
+    emit_load_bool(ACC, BoolConst(1), s);
+
+    emit_beqz(T1, label_num, s);
+
+    emit_load_bool(ACC, BoolConst(0), s);
+
+    emit_label_def(label_num, s);
+
+    ++label_num;
+}
 
 void no_expr_class::code(ostream& s) {
-    log << "no expr" << endl;
+    s << COMMENT << "no expr" << endl;
+    emit_move(ACC, SELF, s);
 }
 
 void object_class::code(ostream& s) {
     log << "object class " << name << endl;
 
     // find object
-    int* offset;
-    if ((offset = env->find_attr(name)) != NULL) {
+    if (env->find_var(name) != -1) {
+        // is a param
+        emit_load(ACC, -env->find_var(name) - 1, FP, s);
+        return;
+    }
+
+    if (env->find_param(name) != -1) {
+        // is a param
+        emit_load(ACC, env->find_param(name) + 3, FP, s);
+        return;
+    }
+    if (env->find_attr(name) != NULL) {
         // is a attribute
-        emit_load(ACC, *offset, SELF, s);
+        emit_load(ACC, *(env->find_attr(name)), SELF, s);
+        return;
+    }
+
+    if (name == self) {
+        emit_move(ACC, SELF, s);
     }
 }

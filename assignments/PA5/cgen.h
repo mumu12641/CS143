@@ -83,7 +83,6 @@ class CgenNode : public class__class {
     std::vector<attr_class*> get_attrs();
     std::map<Symbol, int> get_attrs_offset();
 
-    
     std::map<Symbol, int> methods_offset;
     void code_init(ostream& str);
     int class_tag;
@@ -111,11 +110,11 @@ class Env {
 
    public:
     Env() : so(NULL) {
-        param_table = new SymbolTable<Symbol, int>();
+        // param_table = new std::map<Symbol, int>();
         attribute_table_map = new std::map<Symbol, SymbolTable<Symbol, int>*>();
     }
     ~Env() {
-        delete (param_table);
+        // delete (param_table);
         delete (attribute_table_map);
     }
 
@@ -132,13 +131,45 @@ class Env {
             ->second->lookup(attr_name);
     }
 
+    int find_param(Symbol param_name) {
+        for (int idx = 0; idx < param_table.size(); ++idx) {
+            if (param_table[idx] == param_name) {
+                return idx;
+            }
+        }
+        return -1;
+    }
+
+    int param_addid(Symbol param_name) {
+        param_table.push_back(param_name);
+        return param_table.size() - 1;
+    }
+
+    int find_var(Symbol var_name) {
+        for (int idx = 0; idx < var_table.size(); ++idx) {
+            if (var_table[idx] == var_name) {
+                return idx;
+                // var_table.size() - 1- idx;
+            }
+        }
+        return -1;
+    }
+
+    int var_addid(Symbol var_name) {
+        var_table.push_back(var_name);
+        return var_table.size() - 1;
+    }
+
     // self object
     CgenNodeP so;
 
     // method's param
-    SymbolTable<Symbol, int>* param_table;
+    // SymbolTable<Symbol, int>* param_table;
+    std::vector<Symbol> param_table;
 
     // class's attribute
-    // SymbolTable<Symbol, Position>* attribute_table;
     std::map<Symbol, SymbolTable<Symbol, int>*>* attribute_table_map;
+
+    // method's var
+    std::vector<Symbol> var_table;
 };
