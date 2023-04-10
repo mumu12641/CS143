@@ -109,26 +109,28 @@ class Position {
 class Env {
 
    public:
-    Env() : so(NULL) {
-        // param_table = new std::map<Symbol, int>();
-        attribute_table_map = new std::map<Symbol, SymbolTable<Symbol, int>*>();
-    }
-    ~Env() {
-        // delete (param_table);
-        delete (attribute_table_map);
-    }
+    Env() : so(NULL) {}
 
     void attr_addid(CgenNodeP class_node, Symbol attr_name) {
-        Symbol class_name = class_node->get_name();
-        attribute_table_map->find(class_name)
-            ->second->addid(
-                attr_name,
-                &(class_node->get_attrs_offset().find(attr_name)->second));
+        // Symbol class_name = class_node->get_name();
+        // attribute_table_map->find(class_name)
+        //     ->second->addid(
+        //         attr_name,
+        //         &(class_node->get_attrs_offset().find(attr_name)->second));
+        attrbute_map.find(class_node->get_name())->second->push_back(attr_name);
     }
 
-    int* find_attr(Symbol attr_name) {
-        return attribute_table_map->find(so->get_name())
-            ->second->lookup(attr_name);
+    int find_attr(Symbol attr_name) {
+        // return attribute_table_map->find(so->get_name())
+        //     ->second->lookup(attr_name);
+        for (int idx = 0;
+             idx < attrbute_map.find(so->get_name())->second->size(); ++idx) {
+            if (attrbute_map.find(so->get_name())->second->at(idx) ==
+                attr_name) {
+                return idx;
+            }
+        }
+        return -1;
     }
 
     int find_param(Symbol param_name) {
@@ -168,7 +170,7 @@ class Env {
     std::vector<Symbol> param_table;
 
     // class's attribute
-    std::map<Symbol, SymbolTable<Symbol, int>*>* attribute_table_map;
+    std::map<Symbol, std::vector<Symbol>*> attrbute_map;
 
     // method's var
     std::vector<Symbol> var_table;

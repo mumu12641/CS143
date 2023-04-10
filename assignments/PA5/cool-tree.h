@@ -46,9 +46,9 @@ class Feature_class : public tree_node {
     tree_node* copy() { return copy_Feature(); }
     virtual Feature copy_Feature() = 0;
     virtual bool is_method() = 0;
-    virtual Symbol get_type_decl() {return NULL;}
-    virtual Expression get_expr() {return NULL;}
-    virtual Symbol get_name() {return NULL;}
+    virtual Symbol get_type_decl() { return NULL; }
+    virtual Expression get_expr() { return NULL; }
+    virtual Symbol get_name() { return NULL; }
 
 #ifdef Feature_EXTRAS
     Feature_EXTRAS
@@ -77,6 +77,8 @@ class Expression_class : public tree_node {
     tree_node* copy() { return copy_Expression(); }
     virtual Expression copy_Expression() = 0;
     virtual bool is_empty() { return false; }
+    virtual bool is_let_expr() { return false; }
+    virtual Expression get_body(){return NULL;}
 
 #ifdef Expression_EXTRAS
     Expression_EXTRAS
@@ -181,7 +183,7 @@ class method_class : public Feature_class {
     void dump(ostream& stream, int n);
     bool is_method() { return true; }
     Expression get_expr() { return expr; }
-    Symbol get_name(){return name;}
+    Symbol get_name() { return name; }
 
 #ifdef Feature_SHARED_EXTRAS
     Feature_SHARED_EXTRAS
@@ -209,7 +211,7 @@ class attr_class : public Feature_class {
     bool is_method() { return false; }
     Symbol get_type_decl() { return type_decl; }
     Expression get_expr() { return init; }
-    Symbol get_name(){return name;}
+    Symbol get_name() { return name; }
 
 #ifdef Feature_SHARED_EXTRAS
     Feature_SHARED_EXTRAS
@@ -232,7 +234,7 @@ class formal_class : public Formal_class {
     }
     Formal copy_Formal();
     void dump(ostream& stream, int n);
-    Symbol get_name(){return name;}
+    Symbol get_name() { return name; }
 
 #ifdef Formal_SHARED_EXTRAS
     Formal_SHARED_EXTRAS
@@ -441,6 +443,8 @@ class let_class : public Expression_class {
     }
     Expression copy_Expression();
     void dump(ostream& stream, int n);
+    bool is_let_exp() {return true;}
+    Expression get_body(){return body;}
 
 #ifdef Expression_SHARED_EXTRAS
     Expression_SHARED_EXTRAS

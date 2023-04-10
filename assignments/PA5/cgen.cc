@@ -39,7 +39,7 @@
 extern void emit_string_constant(ostream& str, char* s);
 extern int cgen_debug;
 
-static bool LOG_FLAG = false;
+static bool LOG_FLAG = true;
 static std::ostringstream nop_sstream;
 static std::ostream& log = LOG_FLAG ? std::cout : nop_sstream;
 
@@ -664,8 +664,9 @@ void CgenClassTable::code_prot_obj() {
 
         CgenNodeP class_node = (*i);
         std::vector<attr_class*> all_attr = class_node->get_attrs();
-        env->attribute_table_map->insert(
-            {class_node->get_name(), new SymbolTable<Symbol, int>()});
+
+        env->attrbute_map.insert(
+            {class_node->get_name(), new std::vector<Symbol>()});
 
         str << WORD << "-1" << endl;
         str << class_node->get_name() << PROTOBJ_SUFFIX << LABEL;
@@ -674,8 +675,6 @@ void CgenClassTable::code_prot_obj() {
         str << WORD << class_node->get_name() << DISPTAB_SUFFIX << endl;
 
         // attributes
-        env->attribute_table_map->find(class_node->get_name())
-            ->second->enterscope();
 
         for (auto i = all_attr.begin(); i != all_attr.end(); i++) {
             attr_class* curr_attr = *i;
@@ -717,12 +716,26 @@ void CgenClassTable::code_class_method() {
 
             std::vector<method_class*> all_methods = class_node->get_methods();
             for (method_class* method_ : all_methods) {
+                // for every method
                 env->param_table.clear();
                 emit_method_ref(class_node->get_name(), method_->get_name(),
                                 str);
+
+                // for()
+                // if()
+                // Expression curr_exp = method_->get_expr();
+                // int let_var_num = 0;
+                // if(method_->get_expr()->is_let_expr()){
+
+                // }
+                // while (curr_exp->is_let_expr()) {
+                //     let_var_num++;
+                //     curr_exp = (let_class*)curr_exp->get_body();
+                // }
                 str << LABEL;
 
-                emit_addiu(SP, SP, -12, str);
+                
+                emit_addiu(SP, SP, -12 - 4*let_var_num, str);
                 emit_store(FP, 3, SP, str);
                 emit_store(SELF, 2, SP, str);
                 emit_store(RA, 1, SP, str);
@@ -1024,12 +1037,27 @@ void CgenNode::code_init(ostream& str) {
     std::vector<attr_class*> attrs = get_attrs();
 
     for (auto i = attrs.begin(); i != attrs.end(); i++) {
+        int index = i - attrs.begin();
         if (!(*i)->get_expr()->is_empty()) {
             // is not empty
             (*i)->get_expr()->code(str);
             // offset
-            int index = i - attrs.begin();
             emit_store(ACC, (index * 4 + 12) / WORD_SIZE, SELF, str);
+        } else {
+            // We still need to deal with basic types.
+            if ((*i)->get_type_decl() == Str) {
+                emit_load_string(ACC, stringtable.lookup_string(""), str);
+                emit_store(ACC, (index * 4 + 12) / WORD_SIZE, SELF, str);
+            } else if ((*i)->get_type_decl() == Int) {
+                emit_load_int(ACC, inttable.lookup_string("0"), str);
+                emit_store(ACC, (index * 4 + 12) / WORD_SIZE, SELF, str);
+            } else if ((*i)->get_type_decl() == Bool) {
+                emit_load_bool(ACC, BoolConst(0), str);
+                emit_store(ACC, (index * 4 + 12) / WORD_SIZE, SELF, str);
+            } else {
+                emit_move(ACC, ZERO, str);
+                emit_store(ACC, (index * 4 + 12) / WORD_SIZE, SELF, str);
+            }
         }
     }
 
@@ -1043,6 +1071,9 @@ void CgenNode::code_init(ostream& str) {
 }
 
 void CgenClassTable::code() {
+    if (cgen_Memmgr == 1) {
+        log << "gc" << endl;
+    }
     if (cgen_debug)
         log << "coding global data" << endl;
     code_global_data();
@@ -1122,30 +1153,46 @@ CgenNode::CgenNode(Class_ nd, Basicness bstatus, CgenClassTableP ct)
 //*****************************************************************
 
 void assign_class::code(ostream& s) {
-    log << "assign class" << endl;
-
+    s << COMMENT << "assign_class start" << endl;
+    s << COMMENT << "eval expr" << endl;
     // name expr
     // expr result -> $a0
     expr->code(s);
 
-    // find the name
-    int* offset;
-    if ((offset = env->find_attr(name)) != NULL) {
-        // is a attribute
-        // store $a0 -> offset($SELF)
-        emit_store(ACC, *offset, SELF, s);
+    s << COMMENT << "store to object" << endl;
+    if (env->find_var(name) != -1) {
+        // is a param
+        emit_store(ACC, -env->find_var(name) - 1, FP, s);
     }
+    if (env->find_param(name) != -1) {
+        // is a param
+        emit_store(ACC, env->find_param(name) + 3, FP, s);
+    }
+    if (env->find_attr(name) != -1) {
+        // is a attribute
+        emit_store(ACC, env->find_attr(name) + 3, SELF, s);
+    }
+
+    s << COMMENT << "assign_class end" << endl;
+    s << endl;
 }
 
 void static_dispatch_class::code(ostream& s) {
     // @type_name
-
+    s << COMMENT << "disspatch start" << endl;
     for (int i = actual->first(); actual->more(i); i = actual->next(i)) {
         actual->nth(i)->code(s);
         emit_push(ACC, s);
     }
     // expr -> $a0
-    expr->code(s);
+
+    if (expr->is_empty()) {
+        // self
+        // emit_load(ACC, )
+        emit_move(ACC, SELF, s);
+    } else {
+        expr->code(s);
+    }
 
     // if obj = =void then jmp to abort()
     emit_bne(ACC, ZERO, label_num, s);
@@ -1167,18 +1214,29 @@ void static_dispatch_class::code(ostream& s) {
     emit_load(T1, index, T1, s);
 
     emit_jal(T1, s);
+    s << COMMENT << "dispatch end" << endl;
 }
 
 void dispatch_class::code(ostream& s) {
     // expr name actual
+    s << COMMENT << "dispatch_class start" << endl;
+    s << COMMENT << "push actual" << endl;
     for (int i = actual->first(); actual->more(i); i = actual->next(i)) {
         actual->nth(i)->code(s);
         emit_push(ACC, s);
     }
-    // expr -> $a0
-    expr->code(s);
 
+    // expr -> $a0
+    s << COMMENT << "eval expr of expr.name" << endl;
+    if (expr->is_empty()) {
+        // self
+        // emit_load(ACC, )
+        emit_move(ACC, SELF, s);
+    } else {
+        expr->code(s);
+    }
     // if obj = =void then jmp to abort()
+    s << COMMENT << "if obj = void jmp abort()" << endl;
     emit_bne(ACC, ZERO, label_num, s);
     emit_load_address(ACC, "str_const0", s);
     emit_load_imm(T1, 1, s);
@@ -1188,6 +1246,7 @@ void dispatch_class::code(ostream& s) {
     s << ":" << endl;
 
     // else lable0:
+    s << COMMENT << "else load disp and jump" << endl;
     Symbol curr_class_name = expr->get_type();
     if (curr_class_name == SELF_TYPE) {
         curr_class_name = env->so->get_name();
@@ -1202,10 +1261,14 @@ void dispatch_class::code(ostream& s) {
     emit_load(T1, index, T1, s);
 
     emit_jal(T1, s);
+    s << COMMENT << "dispatch_class end" << endl;
+    s << endl;
 }
 
 void cond_class::code(ostream& s) {
     // pred then_expr else_expr
+    s << COMMENT << "cond_class start" << endl;
+    s << COMMENT << "eval pred" << endl;
     pred->code(s);
 
     // T1 <- a0
@@ -1216,30 +1279,37 @@ void cond_class::code(ostream& s) {
 
     emit_beqz(T1, labelnum_false, s);
 
+    s << COMMENT << "eval then_exp" << endl;
     then_exp->code(s);
 
     emit_branch(labelnum_finish, s);
     emit_label_def(labelnum_false, s);
+    s << COMMENT << "eval else_exp" << endl;
     else_exp->code(s);
     emit_label_def(labelnum_finish, s);
+    s << COMMENT << "cond_class end" << endl;
+    s << endl;
 }
 
 void loop_class::code(ostream& s) {
     // pred body
+    s << COMMENT << "lopp_class start" << endl;
     int label_loop = label_num++;
     int lable_finish = label_num++;
 
     emit_label_def(label_loop, s);
+    s << COMMENT << "eval loop pred" << endl;
     pred->code(s);
 
     emit_load(T1, 3, ACC, s);
     emit_beqz(T1, lable_finish, s);
-
+    s << COMMENT << "eval loop body" << endl;
     body->code(s);
     emit_branch(label_loop, s);
 
     emit_label_def(lable_finish, s);
     emit_move(ACC, ZERO, s);
+    s << COMMENT << "loop_class end" << endl << endl;
 }
 
 void typcase_class::code(ostream& s) {}
@@ -1255,17 +1325,30 @@ void let_class::code(ostream& s) {
     // Symbol type_decl;
     // Expression init;
     // Expression body;
-    s << COMMENT << "push init" << endl;
+    s << COMMENT << "let class start" << endl;
+    s << COMMENT << "eval let init" << endl;
     init->code(s);
+    if (init->is_empty()) {
+        // We still need to deal with basic types.
+        if (type_decl == Str) {
+            emit_load_string(ACC, stringtable.lookup_string(""), s);
+        } else if (type_decl == Int) {
+            emit_load_int(ACC, inttable.lookup_string("0"), s);
+        } else if (type_decl == Bool) {
+            emit_load_bool(ACC, BoolConst(0), s);
+        }
+    }
 
     emit_push(ACC, s);
 
     env->var_addid(identifier);
 
-    s << COMMENT << "body" << endl;
+    s << COMMENT << "eval let body" << endl;
     body->code(s);
+    // s << COMMENT << "let body end" << endl;
     emit_addiu(SP, SP, 4, s);
     env->var_table.clear();
+    s << COMMENT << "let class end" << endl << endl;
 }
 
 void plus_class::code(ostream& s) {
@@ -1396,7 +1479,7 @@ void eq_class::code(ostream& s) {
 
     emit_load_bool(ACC, BoolConst(1), s);
     emit_beq(T1, T2, label_num, s);
-    emit_load_bool(ACC, BoolConst(0), s);
+    emit_load_bool(A1, BoolConst(0), s);
     emit_jal("equality_test", s);
 
     emit_label_ref(label_num, s);
@@ -1457,6 +1540,7 @@ void bool_const_class::code(ostream& s) {
 
 void new__class::code(ostream& s) {
     // type_name
+    s << COMMENT << "new_class start" << endl;
     std::string dest = type_name->get_string();
     dest += PROTOBJ_SUFFIX;
     char* desr_str = new char[dest.length() + 1];
@@ -1469,9 +1553,11 @@ void new__class::code(ostream& s) {
     desr_str = new char[dest.length() + 1];
     strcpy(desr_str, dest.c_str());
     emit_jal(desr_str, s);
+    s << COMMENT << "new_class end" << endl << endl;
 }
 
 void isvoid_class::code(ostream& s) {
+
     e1->code(s);
     emit_move(T1, ACC, s);
 
@@ -1487,12 +1573,10 @@ void isvoid_class::code(ostream& s) {
 }
 
 void no_expr_class::code(ostream& s) {
-    s << COMMENT << "no expr" << endl;
-    emit_move(ACC, SELF, s);
+    emit_move(ACC, ZERO, s);
 }
 
 void object_class::code(ostream& s) {
-    log << "object class " << name << endl;
 
     // find object
     if (env->find_var(name) != -1) {
@@ -1506,9 +1590,9 @@ void object_class::code(ostream& s) {
         emit_load(ACC, env->find_param(name) + 3, FP, s);
         return;
     }
-    if (env->find_attr(name) != NULL) {
+    if (env->find_attr(name) != -1) {
         // is a attribute
-        emit_load(ACC, *(env->find_attr(name)), SELF, s);
+        emit_load(ACC, env->find_attr(name) + 3, SELF, s);
         return;
     }
 

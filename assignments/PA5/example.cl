@@ -3,64 +3,29 @@
     as possible.
  *)
 
+-- class Node{
+--     s:String;
+--    next:Node;
+
+--     init(c:String, nextNode:Node):Node{
+--       {
+--          s <- c;
+--          next <- nextNode;
+--          self;
+--       }
+--    };
+-- };
+
 class Main inherits IO{
   i : Int <- 0;
   s: String <- "hello";
   e: String;
   b: Bool <- true;
 
-  main():Object { {
-
-    -- if (i < 3) then 
-    --   out_string("i<3") 
-    --   -- 1
-    -- else 
-    --   out_string("i>3")
-    --   -- 0 
-    -- fi;
-    -- out_string("\n");
-
-    -- while(i < 3) loop
-    --         {
-    --           -- 1;
-    --         out_int(i);
-    --         out_string("\n");
-            
-    --         i <- i + 1;
-    --         }
-         
-    --      pool;
-    --      out_string("\n");
-         
-    -- let a:Int <- 1 ,
-    --   b:Int<-2,
-    --   c:Int<-3
-    --    in {
-    --   out_int(a+b+c+4);
-    --   -- b;
-    --   -- a;
-    --   -- a + b;
-    -- };
-    -- out_string("\n");
-    -- ~1;
-    -- if(s  = "hello") then out_string("s==hello\n")
-    -- else out_string("s!=hello\n")
-    -- fi;
-
-    -- if( not (i  <= 0)) then out_string("i  > 0\n")
-    -- else out_string("i  <= 0\n")
-    -- fi;
-    -- i<=0;
-    -- not b;
-
-    -- isvoid(i);
-    new IO.out_string("new\n");
-  }
+  main():Object { 
+    let k:Int ,j:Int , l:Int , p:Int,s:Int,q:Int,w:Int in{
+      k <- 0;
+      out_int(k);
+    }
   };
-  
-  -- test(a:Int):Object{
-  --   self@IO.out_int(i)
-  -- };
-
 };
-

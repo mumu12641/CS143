@@ -1,2 +1,3 @@
 #!/bin/zsh -f
-../PA2/lexer $* | ../PA3/parser $* | ../PA4/semant $* | ./cgen $*
+# ../PA2/lexer $* | ../PA3/parser $* | ../PA4/semant $* | ./cgen $*
+lexer $* | parser $* | semant $* | ./cgen $*
