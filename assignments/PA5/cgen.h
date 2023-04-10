@@ -61,6 +61,8 @@ class CgenClassTable : public SymbolTable<Symbol, CgenNode> {
 
     std::map<Symbol, int> class_tags;
     CgenNodeP get_class_node(Symbol class_name);
+
+    int get_let_var_num(method_class* method_);
 };
 
 class CgenNode : public class__class {
@@ -150,8 +152,8 @@ class Env {
     int find_var(Symbol var_name) {
         for (int idx = 0; idx < var_table.size(); ++idx) {
             if (var_table[idx] == var_name) {
-                return idx;
-                // var_table.size() - 1- idx;
+                // return var_table.size() - 1 - idx;
+                return let_var_num - 1 - idx;
             }
         }
         return -1;
@@ -174,4 +176,5 @@ class Env {
 
     // method's var
     std::vector<Symbol> var_table;
+    int let_var_num = 0;
 };

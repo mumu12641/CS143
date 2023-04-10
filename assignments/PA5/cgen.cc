@@ -709,6 +709,11 @@ void CgenClassTable::code_init_method() {
     }
 }
 
+int CgenClassTable::get_let_var_num(method_class* method_) {
+    Expression curr_exp = method_->get_expr();
+    return curr_exp->get_let_var_num();
+}
+
 void CgenClassTable::code_class_method() {
     for (auto class_node : all_classes) {
         if (!class_node->basic()) {
@@ -720,25 +725,16 @@ void CgenClassTable::code_class_method() {
                 env->param_table.clear();
                 emit_method_ref(class_node->get_name(), method_->get_name(),
                                 str);
-
-                // for()
-                // if()
-                // Expression curr_exp = method_->get_expr();
-                // int let_var_num = 0;
-                // if(method_->get_expr()->is_let_expr()){
-
-                // }
-                // while (curr_exp->is_let_expr()) {
-                //     let_var_num++;
-                //     curr_exp = (let_class*)curr_exp->get_body();
-                // }
                 str << LABEL;
+                int let_var_num = get_let_var_num(method_);
+                env->let_var_num = let_var_num;
+                str << COMMENT << get_let_var_num(method_) << endl;
+                int fp_offset = 12 + 4 * let_var_num;
 
-                
-                emit_addiu(SP, SP, -12 - 4*let_var_num, str);
-                emit_store(FP, 3, SP, str);
-                emit_store(SELF, 2, SP, str);
-                emit_store(RA, 1, SP, str);
+                emit_addiu(SP, SP, -fp_offset, str);
+                emit_store(FP, (fp_offset) / WORD_SIZE, SP, str);
+                emit_store(SELF, (fp_offset - 4) / WORD_SIZE, SP, str);
+                emit_store(RA, (fp_offset - 8) / WORD_SIZE, SP, str);
                 emit_addiu(FP, SP, 4, str);
                 emit_move(SELF, ACC, str);
                 for (int i = method_->formals->first();
@@ -748,11 +744,14 @@ void CgenClassTable::code_class_method() {
                 Expression exprs = method_->get_expr();
                 exprs->code(str);
 
-                emit_load(FP, 3, SP, str);
-                emit_load(SELF, 2, SP, str);
-                emit_load(RA, 1, SP, str);
+                env->let_var_num = 0;
+                emit_load(FP, fp_offset / WORD_SIZE, SP, str);
+                emit_load(SELF, fp_offset / WORD_SIZE - 1, SP, str);
+                emit_load(RA, fp_offset / WORD_SIZE - 2, SP, str);
 
-                emit_addiu(SP, SP, 12 + method_->formals->len() * 4, str);
+                emit_addiu(SP, SP,
+                           12 + 4 * (let_var_num + method_->formals->len()),
+                           str);
                 emit_return(str);
             }
         }
@@ -1162,7 +1161,8 @@ void assign_class::code(ostream& s) {
     s << COMMENT << "store to object" << endl;
     if (env->find_var(name) != -1) {
         // is a param
-        emit_store(ACC, -env->find_var(name) - 1, FP, s);
+        // emit_store(ACC, -env->find_var(name) - 1, FP, s);
+        emit_store(ACC, env->find_var(name), FP, s);
     }
     if (env->find_param(name) != -1) {
         // is a param
@@ -1223,6 +1223,7 @@ void dispatch_class::code(ostream& s) {
     s << COMMENT << "push actual" << endl;
     for (int i = actual->first(); actual->more(i); i = actual->next(i)) {
         actual->nth(i)->code(s);
+
         emit_push(ACC, s);
     }
 
@@ -1312,7 +1313,9 @@ void loop_class::code(ostream& s) {
     s << COMMENT << "loop_class end" << endl << endl;
 }
 
-void typcase_class::code(ostream& s) {}
+void typcase_class::code(ostream& s) {
+    
+}
 
 void block_class::code(ostream& s) {
     for (int i = body->first(); body->more(i); i = body->next(i)) {
@@ -1339,15 +1342,14 @@ void let_class::code(ostream& s) {
         }
     }
 
-    emit_push(ACC, s);
-
+    // emit_push(ACC, s);
     env->var_addid(identifier);
+    emit_store(ACC, env->find_var(identifier), FP, s);
 
     s << COMMENT << "eval let body" << endl;
     body->code(s);
-    // s << COMMENT << "let body end" << endl;
-    emit_addiu(SP, SP, 4, s);
     env->var_table.clear();
+    // env->let_var_num = 0;
     s << COMMENT << "let class end" << endl << endl;
 }
 
@@ -1581,13 +1583,14 @@ void object_class::code(ostream& s) {
     // find object
     if (env->find_var(name) != -1) {
         // is a param
-        emit_load(ACC, -env->find_var(name) - 1, FP, s);
+        // emit_load(ACC, -env->find_var(name) - 1, FP, s);
+        emit_load(ACC, env->find_var(name), FP, s);
         return;
     }
 
     if (env->find_param(name) != -1) {
         // is a param
-        emit_load(ACC, env->find_param(name) + 3, FP, s);
+        emit_load(ACC, env->find_param(name) + 3 + env->let_var_num, FP, s);
         return;
     }
     if (env->find_attr(name) != -1) {

@@ -55,6 +55,7 @@ dotest:	cgen example.cl
 	../../bin/coolc ./example.cl -o example_coolc.s
 	-./mycoolc example.cl
 
+
 ${LIBS}:
 	${CLASSDIR}/etc/link-object ${ASSN} $@
 

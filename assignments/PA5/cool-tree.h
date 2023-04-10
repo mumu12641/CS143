@@ -77,8 +77,14 @@ class Expression_class : public tree_node {
     tree_node* copy() { return copy_Expression(); }
     virtual Expression copy_Expression() = 0;
     virtual bool is_empty() { return false; }
+
+    // for let_class
     virtual bool is_let_expr() { return false; }
-    virtual Expression get_body(){return NULL;}
+    virtual Expression get_body() { return NULL; }
+    virtual Symbol get_id() { return NULL; }
+
+    // for let var num, every exp should impl it
+    virtual int get_let_var_num() { return 0; }
 
 #ifdef Expression_EXTRAS
     Expression_EXTRAS
@@ -356,6 +362,10 @@ class cond_class : public Expression_class {
     Expression copy_Expression();
     void dump(ostream& stream, int n);
 
+    int get_let_var_num() {
+        return then_exp->get_let_var_num() + else_exp->get_let_var_num();
+    }
+
 #ifdef Expression_SHARED_EXTRAS
     Expression_SHARED_EXTRAS
 #endif
@@ -377,6 +387,7 @@ class loop_class : public Expression_class {
     }
     Expression copy_Expression();
     void dump(ostream& stream, int n);
+    int get_let_var_num() { return body->get_let_var_num(); }
 
 #ifdef Expression_SHARED_EXTRAS
     Expression_SHARED_EXTRAS
@@ -417,6 +428,15 @@ class block_class : public Expression_class {
     block_class(Expressions a1) { body = a1; }
     Expression copy_Expression();
     void dump(ostream& stream, int n);
+    int get_let_var_num() {
+        int max = 0;
+        for (int i = body->first(); body->more(i); i = body->next(i)) {
+            if (body->nth(i)->get_let_var_num() > max) {
+                max = body->nth(i)->get_let_var_num();
+            }
+        }
+        return max;
+    }
 
 #ifdef Expression_SHARED_EXTRAS
     Expression_SHARED_EXTRAS
@@ -443,8 +463,11 @@ class let_class : public Expression_class {
     }
     Expression copy_Expression();
     void dump(ostream& stream, int n);
-    bool is_let_exp() {return true;}
-    Expression get_body(){return body;}
+    bool is_let_expr() { return true; }
+    Expression get_body() { return body; }
+    Symbol get_id() { return identifier; }
+
+    int get_let_var_num() { return body->get_let_var_num() + 1; }
 
 #ifdef Expression_SHARED_EXTRAS
     Expression_SHARED_EXTRAS

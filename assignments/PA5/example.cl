@@ -3,29 +3,84 @@
     as possible.
  *)
 
--- class Node{
---     s:String;
---    next:Node;
+class Node{
+    s:String;
+    next:Node;
 
---     init(c:String, nextNode:Node):Node{
---       {
---          s <- c;
---          next <- nextNode;
---          self;
---       }
---    };
--- };
+    pushOnTop(c:String):Node{
+         let newNode :Node in {
+            newNode <- (new Node).setS(c);
+            newNode.setNext(self);
+            newNode;
+         }
+
+   };
+
+    setS(c:String):Node{
+      {
+         s <- c;
+         self;
+      }
+   };
+
+   setNext(n:Node):Node{
+      {
+        next <- n;
+        self;
+      }
+   };
+
+   getS():String{
+    s
+   };
+
+   getNext():Node{
+    next
+   };
+};
 
 class Main inherits IO{
-  i : Int <- 0;
-  s: String <- "hello";
-  e: String;
-  b: Bool <- true;
+  top:Node;
+  printStack():Object{
+      let node:Node <- top in {
+         while(not (isvoid node)) loop
+         {
+            (new IO).out_string(node.getS());
+            (new IO).out_string("\n");
+            node <- node.getNext();
+         }
+         pool;
+      }
+  };
+
+  eval(s:String):Object{
+    if (s = "d") then {
+      printStack();
+    }else{
+          push(s);
+    }fi
+  };
+
+  push(c:String):Object{
+      if(isvoid top) then {
+         let newNode :Node in {
+              top <- (new Node).setS(c);
+              top.setNext(newNode);
+         };
+      } else {
+         top <- top.pushOnTop(c);
+      }fi
+   };
 
   main():Object { 
-    let k:Int ,j:Int , l:Int , p:Int,s:Int,q:Int,w:Int in{
-      k <- 0;
-      out_int(k);
-    }
+    let input: String in {
+         while(true) loop
+         {
+            (new IO).out_string(">");
+            input <- (new IO).in_string();
+            eval(input);
+         }
+         pool;
+      }
   };
 };
