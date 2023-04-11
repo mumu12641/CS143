@@ -12,24 +12,27 @@ class Node {
    s:String;
    next:Node;
 
-   init(c:String, nextNode:Node):Node{
-      {
-         s <- c;
-         next <- nextNode;
-         self;
-      }
-   };
-
    pushOnTop(c:String):Node{
          let newNode :Node in {
-            newNode <- (new Node).init(c,self);
+            newNode <- (new Node).setS(c);
+            newNode.setNext(self);
             newNode;
          }
 
    };
 
-   setNext(nextNode:Node):Node{
-      next<-nextNode
+   setS(c:String):Node{
+      {
+         s <- c;
+         self;
+      }
+   };
+
+   setNext(n:Node):Node{
+      {
+        next <- n;
+        self;
+      }
    };
 
    getNext():Node{
@@ -54,7 +57,8 @@ class Main inherits A2I {
    push(c:String):Object{
       if(isvoid top) then {
          let newNode :Node in {
-            top <- (new Node).init(c, newNode);
+            top <- (new Node).setS(c);
+            top.setNext(newNode);
          };
       } else {
          top <- top.pushOnTop(c);
@@ -77,7 +81,9 @@ class Main inherits A2I {
                         sum: Int,
                         ret:Node in {
                            sum <- (new A2I).a2i(n1.getS()) + (new A2I).a2i(n2.getS());
-                           ret <- (new Node).init((new A2I).i2a(sum),n2.getNext());
+                           -- (new IO).out_int(sum);
+                           ret <- (new Node).setS((new A2I).i2a(sum));
+                           ret.setNext(n2.getNext());
                            top <- ret;
                         };
                }
@@ -137,9 +143,8 @@ class Main inherits A2I {
                      if(input = "p")then{
                         printStack();
                      }
-                     else{
-                        push(input);
-                     }
+                     else
+                        push(input)
                      fi
                   fi
                fi
@@ -150,31 +155,13 @@ class Main inherits A2I {
 
    main() : Object {
       let input: String in {
-         (new IO).out_string(">");
-         input <- "1";
-         (new IO).out_string(input);
-         (new IO).out_string("\n");
-         excute(input);
-
-         (new IO).out_string(">");
-         input <- "+";
-         (new IO).out_string("\n");
-         excute(input);
-
-         (new IO).out_string(">");
-         input <- "2";
-         (new IO).out_string("\n");
-         excute(input);
-
-         (new IO).out_string(">");
-         input <- "s";
-         (new IO).out_string("\n");
-         excute(input);
-
-         (new IO).out_string(">");
-         input <- "d";
-         (new IO).out_string("\n");
-         excute(input);
+         while(true) loop
+         {
+            (new IO).out_string(">");
+            input <- (new IO).in_string();
+            excute(input);
+         }
+         pool;
       }
    };
 

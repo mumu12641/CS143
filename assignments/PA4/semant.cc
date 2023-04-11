@@ -915,7 +915,7 @@ Symbol new__class::check_expr_type() {
 }
 
 Symbol isvoid_class::check_expr_type() {
-    Symbol type = e1->check_expr_type();
+    Symbol type_ = e1->check_expr_type();
     set_type(Bool);
     return type;
 }

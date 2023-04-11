@@ -39,7 +39,7 @@
 extern void emit_string_constant(ostream& str, char* s);
 extern int cgen_debug;
 
-static bool LOG_FLAG = true;
+static bool LOG_FLAG = false;
 static std::ostringstream nop_sstream;
 static std::ostream& log = LOG_FLAG ? std::cout : nop_sstream;
 
@@ -744,7 +744,8 @@ void CgenClassTable::code_class_method() {
                 Expression exprs = method_->get_expr();
                 exprs->code(str);
 
-                env->let_var_num = 0;
+                // env->let_var_num = 0;
+                env->var_table.clear();
                 emit_load(FP, fp_offset / WORD_SIZE, SP, str);
                 emit_load(SELF, fp_offset / WORD_SIZE - 1, SP, str);
                 emit_load(RA, fp_offset / WORD_SIZE - 2, SP, str);
@@ -1313,9 +1314,7 @@ void loop_class::code(ostream& s) {
     s << COMMENT << "loop_class end" << endl << endl;
 }
 
-void typcase_class::code(ostream& s) {
-    
-}
+void typcase_class::code(ostream& s) {}
 
 void block_class::code(ostream& s) {
     for (int i = body->first(); body->more(i); i = body->next(i)) {
@@ -1348,9 +1347,10 @@ void let_class::code(ostream& s) {
 
     s << COMMENT << "eval let body" << endl;
     body->code(s);
-    env->var_table.clear();
+    env->var_table.pop_back();
     // env->let_var_num = 0;
-    s << COMMENT << "let class end" << endl << endl;
+
+    s << COMMENT << "let class end " << endl << endl;
 }
 
 void plus_class::code(ostream& s) {
@@ -1388,7 +1388,7 @@ void sub_class::code(ostream& s) {
     emit_load(T1, 3, ACC, s);
     emit_load(T2, 3, T2, s);
 
-    emit_sub(T1, T1, T2, s);
+    emit_sub(T1, T2, T1, s);
 
     emit_store(T1, 3, ACC, s);
 
@@ -1424,7 +1424,7 @@ void divide_class::code(ostream& s) {
     emit_load(T1, 3, ACC, s);
     emit_load(T2, 3, T2, s);
 
-    emit_div(T1, T1, T2, s);
+    emit_div(T1, T2, T1, s);
 
     emit_store(T1, 3, ACC, s);
 
@@ -1575,10 +1575,12 @@ void isvoid_class::code(ostream& s) {
 }
 
 void no_expr_class::code(ostream& s) {
+    s << COMMENT << "no expr at " << get_line_number() << endl;
     emit_move(ACC, ZERO, s);
 }
 
 void object_class::code(ostream& s) {
+    s << COMMENT << "object " << name << endl;
 
     // find object
     if (env->find_var(name) != -1) {

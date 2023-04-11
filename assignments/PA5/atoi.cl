@@ -54,11 +54,19 @@ overflow.
 
 *)
      a2i(s : String) : Int {
-        if s.length() = 0 then 0 else
-	if s.substr(0,1) = "-" then ~a2i_aux(s.substr(1,s.length()-1)) else
-        if s.substr(0,1) = "+" then a2i_aux(s.substr(1,s.length()-1)) else
-           a2i_aux(s)
+        
+        
+        if s.length() = 0 
+        then 0 else
+	        if s.substr(0,1) = "-" 
+            then ~a2i_aux(s.substr(1,s.length()-1)) else
+                if s.substr(0,1) = "+" 
+                then a2i_aux(s.substr(1,s.length()-1)) else{
+                    a2i_aux(s);
+                }
+                    
         fi fi fi
+        
      };
 
 (*
@@ -66,21 +74,21 @@ overflow.
 example, this method is written iteratively.
 *)
      a2i_aux(s : String) : Int {
-	(let int : Int <- 0 in	
-           {	
-               (let j : Int <- s.length() in
-	          (let i : Int <- 0 in
-		    while i < j loop
-			{
-			    int <- int * 10 + c2i(s.substr(i,1));
-			    i <- i + 1;
-			}
-		    pool
-		  )
-	       );
-              int;
-	    }
-        )
+	       let int : Int <- 0 in	
+                {
+                    let j : Int <- s.length() in
+                        let i : Int <- 0 in
+                                while i < j loop
+                                {
+                                    int <- int * 10 + c2i(s.substr(i,1));
+                                    i <- i + 1;
+                                }
+                                pool
+                        
+                    ;
+                    int;
+                }
+        
      };
 
 (*
@@ -98,11 +106,17 @@ numbers are handled correctly.
     i2a_aux is an example using recursion.
 *)		
     i2a_aux(i : Int) : String {
-        if i = 0 then "" else 
-	    (let next : Int <- i / 10 in
-		i2a_aux(next).concat(i2c(i - next * 10))
-	    )
-        fi
+        {
+            -- (new IO).out_int(i);
+            -- (new IO).out_string("\n");
+            if i = 0 then "" else 
+                let next : Int <- i / 10 in{
+                    i2a_aux(next).concat(i2c(i - next * 10));
+                }
+                    
+                
+            fi;
+        }
     };
 
 };
